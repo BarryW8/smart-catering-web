@@ -24,6 +24,8 @@
     "ip": "^1.1.5",
     "stylus": "^0.54.8",
     "svg-sprite-loader": "^6.0.7",
+    "unplugin-auto-import": "^0.11.2",
+    "unplugin-vue-components": "^0.22.4",
     "vite": "^2.5.1",
     "vite-plugin-style-import": "^1.2.1"
   }

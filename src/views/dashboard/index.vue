@@ -9,7 +9,7 @@ import welcome from "@/assets/welcome.png";
 export default {
   setup() {
     return {
-      welcome,
+      welcome
     };
   },
 };

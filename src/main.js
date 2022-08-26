@@ -9,7 +9,7 @@ import directive from "./directive/index"; // directive
 
 import "element-plus/lib/theme-chalk/index.css"; // element css
 
-import useElementUi from "./elementui"; // 按需引入element-ui
+// import useElementUi from "./elementui"; // 按需引入element-ui
 
 import "./core/permission"; // 动态校验路由
 
@@ -21,7 +21,7 @@ const app = createApp(App);
 
 directive(app); // 放在mount上面，有顺序的
 
-useElementUi(app); // 引用element-ui
+// useElementUi(app); // 引用element-ui
 
 app.component("svg-icon", svgIcon);
 
