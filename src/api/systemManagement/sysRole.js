@@ -40,7 +40,7 @@ export function findById(data) {
   })
 }
 
-// 分页查询
+// 分页列表
 export function findPage(data) {
   return request({
     url: api + '/findPage',
