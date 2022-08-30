@@ -1,17 +1,17 @@
 <template>
-  <div id="login-container">
+  <div id="login-container" @keyup.enter="handleLogin">
     <el-form
-      ref="loginForm"
-      :model="userInfo"
+      ref="loginFormRef"
+      :model="loginForm"
       :rules="rules"
       class="login-form"
       label-width="80px"
     >
       <h2 class="login-title">{{ systemName }}</h2>
-      <el-form-item prop="account">
+      <el-form-item prop="username">
         <i class="login-user el-icon-user-solid"></i>
         <el-input
-          v-model="userInfo.account"
+          v-model="loginForm.username"
           autocomplete="off"
           placeholder="用户名"
         ></el-input>
@@ -19,8 +19,7 @@
       <el-form-item prop="password">
         <i class="login-user el-icon-lock"></i>
         <el-input
-          v-model="userInfo.password"
-          @keyup.enter="login"
+          v-model="loginForm.password"
           :type="switchText"
           placeholder="密码"
           autocomplete="off"
@@ -32,9 +31,7 @@
           @click="switchStatus"
         />
       </el-form-item>
-      <el-button @click="login" type="primary" :loading="loading"
-        >登录</el-button
-      >
+      <el-button @click="handleLogin" type="primary" :loading="loading">登录</el-button>
       <div class="version">版本号：{{ version }}</div>
       <div class="version" style="margin-top: -10px">
         账号：any &nbsp;&nbsp;&nbsp;&nbsp;密码：any
@@ -43,79 +40,124 @@
   </div>
 </template>
 
-<script>
-// import globalProperty from "@/mixin/global";
+<script setup>
 import { login } from "@/api/epgms/account/login";
 import { ElMessage } from "element-plus";
-import bgColor from "@/mixin/global";
-export default {
-  // mixins: [globalProperty],
-  data() {
-    return {
-      // backgroundColor: this.bgColor,
-      passwordStatus: true,
-      version: import.meta.env.VITE_VERSION,
-      systemName: import.meta.env.VITE_SYSTEM_NAME,
-      loading: false,
-      switchText: "password",
-      switchIcon: "eye",
-      userInfo: {
-        account: "",
-        password: "",
-      },
-      rules: {
-        account: [
-          {
-            required: true,
-            message: "请输入登录账号",
-            trigger: "blur",
-          },
-        ],
-        password: [
-          { required: true, message: "请输入密码", trigger: "blur" },
-        ],
-      },
-    };
-  },
-  watch: {
-    passwordStatus(newValue) {
-      if (newValue) {
-        this.switchText = "password";
-        this.switchIcon = "eye";
-      } else {
-        this.switchText = "text";
-        this.switchIcon = "eye-open";
-      }
-    },
-  },
-  methods: {
-    // 登录
-    login() {
-      this.$refs.loginForm.validate((valid) => {
-        if (valid) {
-          this.loading = true;
-          this.$store
-            .dispatch("LoginAction", {
-              account: this.userInfo.account,
-              password: this.userInfo.password,
-            })
-            .then((res) => {
-              this.loading = false;
-              this.$router.push("/");
-            })
-            .catch((err) => {
-              ElMessage.error(err.message);
-              this.loading = false;
-            });
-        }
-      });
-    },
-    // 显示密码
-    switchStatus() {
-      this.passwordStatus = !this.passwordStatus;
-    },
-  },
-};
+import { useStore } from "vuex"
+import router from '@/router'
+
+let passwordStatus = true
+let version = import.meta.env.VITE_VERSION
+let systemName = import.meta.env.VITE_SYSTEM_NAME
+let loading = false
+let switchText = "password"
+let switchIcon = "eye"
+
+const loginFormRef = ref(null)
+const loginForm = reactive({
+  username: 'admin',
+  password: '123456'
+})
+const rules = reactive({
+  username: [{ required: true, message: '请输入账号', trigger: 'blur' }],
+  password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+})
+const store = useStore()
+// 使用 action
+const Login = (params) => store.dispatch('Login', params)
+
+function switchStatus() {
+  passwordStatus = !passwordStatus;
+}
+
+function handleLogin() {
+  loginFormRef.value.validate(valid => {
+    console.log(valid)
+    if (valid) {
+      let params = Object.assign({}, loginForm)
+      Login(params).then(res => {
+        console.log('login2-------', res)
+        ElMessage({
+          type: 'success',
+          message: '登录成功!',
+          showClose: true
+        })
+        router.push('/')
+      })
+    } else {
+      return false
+    }
+  })
+}
+
+// export default {
+//   // mixins: [globalProperty],
+//   data() {
+//     return {
+//       // backgroundColor: this.bgColor,
+//       passwordStatus: true,
+//       version: import.meta.env.VITE_VERSION,
+//       systemName: import.meta.env.VITE_SYSTEM_NAME,
+//       loading: false,
+//       switchText: "password",
+//       switchIcon: "eye",
+//       userInfo: {
+//         account: "",
+//         password: "",
+//       },
+//       rules: {
+//         account: [
+//           {
+//             required: true,
+//             message: "请输入登录账号",
+//             trigger: "blur",
+//           },
+//         ],
+//         password: [
+//           { required: true, message: "请输入密码", trigger: "blur" },
+//         ],
+//       },
+//     };
+//   },
+//   watch: {
+//     passwordStatus(newValue) {
+//       if (newValue) {
+//         this.switchText = "password";
+//         this.switchIcon = "eye";
+//       } else {
+//         this.switchText = "text";
+//         this.switchIcon = "eye-open";
+//       }
+//     },
+//   },
+//   methods: {
+//     // 登录
+//     login() {
+//       this.$refs.loginForm.validate((valid) => {
+//         if (valid) {
+//           this.loading = true;
+//           this.$store
+//             .dispatch("LoginAction", {
+//               account: this.userInfo.account,
+//               password: this.userInfo.password,
+//             })
+//             .then((res) => {
+//               this.loading = false;
+//               this.$router.push("/");
+//             })
+//             .catch((err) => {
+//               ElMessage.error(err.message);
+//               this.loading = false;
+//             });
+//         }
+//       });
+//     },
+//     // 显示密码
+//     switchStatus() {
+//       this.passwordStatus = !this.passwordStatus;
+//     },
+//   },
+// };
 </script>
 
 <style lang="stylus">

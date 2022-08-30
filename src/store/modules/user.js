@@ -1,20 +1,14 @@
-import { login } from "@/api/epgms/account/login";
+import { login, logout } from "@/api/systemManagement/sysUser";
 import { getUserInfo } from "@/api/epgms/account/getUserInfo";
-import { logout } from "@/api/epgms/account/logout";
 import filterAsyncRoutes from "@/core/addRoutePermission";
 import {
   setToken,
   getToken,
-  setUserName,
-  getUserName,
   removeToken,
-} from "@/core/auth";
+} from "@/utils/auth";
 
 const state = {
   token: getToken(),
-  userName: getUserName(),
-  account: "",
-  avatar: "",
   sidebar: true,
   routes: [],
 };
@@ -22,15 +16,6 @@ const state = {
 const mutations = {
   SET_TOKEN: (state, token) => {
     state.token = token;
-  },
-  SET_NAME: (state, userName) => {
-    state.userName = userName;
-  },
-  SET_ACCOUNT: (state, account) => {
-    state.account = account;
-  },
-  SET_AVATAR: (state, avatar) => {
-    state.avatar = avatar;
   },
   SET_SIDEBAR: (state) => {
     state.sidebar = !state.sidebar;
@@ -42,21 +27,35 @@ const mutations = {
 
 const actions = {
   // 登录
-  async LoginAction(context, userInfo) {
-    const { account, password } = userInfo;
-    var result = await login({
-      account: account.trim(),
+  async Login({ commit }, userInfo) {
+    console.log(userInfo)
+    const { username, password } = userInfo;
+    var res = await login({
+      username: username.trim(),
       password: password.trim(),
     });
-    const { data } = result;
-    const { token, userName, avator, userAccount } = data;
-    context.commit("SET_TOKEN", token);
-    context.commit("SET_NAME", userName);
-    context.commit("SET_AVATAR", avator);
-    context.commit("SET_ACCOUNT", userAccount);
-    setToken(token);
-    setUserName(userName);
+    const { code, data } = res;
+    if (code === 0) {
+      commit("SET_TOKEN", data);
+      setToken(data);
+    }
+    return res
   },
+
+  // 获取用户信息
+  // async GetUserInfo({ commit }, token) {
+  //   const res = await getUserInfo(token);
+  //   const { code, data } = res;
+  //   if (code === 0) {
+  //     // 存用户信息
+  //     commit('SET_USER_INFO', data)
+  //     // 还需把接口返回的路由信息commit到动态路由
+  //     // if (data && data.menus) {
+  //     //   commit('permission/SET_ROUTES', data.menus, { root: true })
+  //     // }
+  //   }
+  //   return res;
+  // },
 
   // 获取用户信息
   async GetUserInfo(context, token) {
@@ -67,13 +66,9 @@ const actions = {
   },
 
   // 退出登录
-  async Logout(context) {
+  async Logout({ commit }) {
     logout().then(() => {
-      context.commit("SET_TOKEN", "");
-      context.commit("SET_NAME", "");
-      context.commit("SET_AVATAR", "");
-      context.commit("SET_ACCOUNT", "");
-      removeToken();
+      removeToken() // must remove  token  first
     });
   },
 

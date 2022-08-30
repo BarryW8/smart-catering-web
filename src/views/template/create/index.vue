@@ -1,12 +1,15 @@
 <template>
   <h1>template/create</h1>
   <el-button @click="findPageList">search</el-button>
-  <el-button type="primary" @click="handleLogin">search</el-button>
+  <el-button type="primary" @click="handleLogin2">search</el-button>
 </template>
 
 <script setup>
 import { ElMessage } from 'element-plus'
-import { findPage, login } from '@/api/systemManagement/sysUser'
+import { useStore } from "vuex"
+import { findPage } from '@/api/systemManagement/sysUser'
+
+const store = useStore()
 
 onMounted(() => {
   console.log(`the component is now mounted.`)
@@ -16,6 +19,9 @@ onMounted(() => {
     showClose: true
   })
 })
+
+// 使用 action
+const Login = (params) => store.dispatch('Login', params)
 
 function findPageList() {
   let params = {
@@ -27,13 +33,14 @@ function findPageList() {
   })
 }
 
-function handleLogin() {
+
+function handleLogin2() {
   let params = {
     username: 'admin',
     password: '123456'
   }
-  login(params).then(res => {
-    console.log('login-------', res)
+  Login(params).then(res => {
+    console.log('login2-------', res)
   })
 }
 </script>
