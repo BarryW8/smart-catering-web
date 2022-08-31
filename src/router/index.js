@@ -46,6 +46,31 @@ const constantRouters = [
 // 动态路由
 export const asyncRoutes = [
   {
+    path: "/systemManagement",
+    // hidden: true,
+    component: Layout,
+    meta: {
+      title: "系统管理",
+      icon: "nest",
+    },
+    children: [
+      {
+        path: "sysUser",
+        component: () => import("@/views/systemManagement/sysUser/index.vue"),
+        meta: {
+          title: "用户管理",
+        },
+      },
+      {
+        path: "sysRole",
+        component: () => import("@/views/systemManagement/sysRole/index.vue"),
+        meta: {
+          title: "角色管理",
+        },
+      },
+    ],
+  },
+  {
     path: "/nested",
     // hidden: true,
     component: Layout,

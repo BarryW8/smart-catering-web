@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "axios": "^0.21.1",
-    "element-plus": "^1.0.2-beta.71",
+    "element-plus": "^2.2.15",
     "js-cookie": "^2.2.1",
     "normalize.css": "^8.0.1",
     "nprogress": "^0.2.0",
@@ -28,6 +28,8 @@
     "unplugin-auto-import": "^0.11.2",
     "unplugin-vue-components": "^0.22.4",
     "vite": "^2.8.6",
-    "vite-plugin-style-import": "^1.2.1"
+    "vite-plugin-style-import": "^1.2.1",
+    "sass": "1.26.8",
+    "sass-loader": "8.0.2"
   }
 }

@@ -6,7 +6,7 @@
  * * * * * * * * * * * * * * *
  */
 
-import { getToken } from "@/core/auth";
+import { getToken } from "@/utils/auth";
 import { router } from "@/router/index";
 import store from "@/store";
 import NProgress from "nprogress";

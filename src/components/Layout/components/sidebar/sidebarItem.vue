@@ -21,7 +21,7 @@
   </template>
 
   <!-- 嵌套情况 -->
-  <el-submenu
+  <el-sub-menu
     v-else
     :index="resolvePath(onlyOneChild.path)"
     popper-append-to-body
@@ -40,7 +40,7 @@
       :item="child"
       :base-path="resolvePath(child.path)"
     />
-  </el-submenu>
+  </el-sub-menu>
 </template>
 
 <script>
