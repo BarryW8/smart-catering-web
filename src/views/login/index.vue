@@ -1,5 +1,5 @@
 <template>
-  <div id="login-container" @keyup.enter="handleLogin">
+  <div class="login-container" @keyup.enter="handleLogin">
     <el-form
       ref="loginFormRef"
       :model="loginForm"
@@ -9,26 +9,15 @@
     >
       <h2 class="login-title">{{ systemName }}</h2>
       <el-form-item prop="username">
-        <i class="login-user el-icon-user-solid"></i>
-        <el-input
-          v-model="loginForm.username"
-          autocomplete="off"
-          placeholder="用户名"
-        ></el-input>
+        <el-input v-model="loginForm.username" placeholder="用户名" :prefix-icon="User" />
       </el-form-item>
       <el-form-item prop="password">
-        <i class="login-user el-icon-lock"></i>
         <el-input
           v-model="loginForm.password"
-          :type="switchText"
+          type="password"
           placeholder="密码"
-          autocomplete="off"
-        ></el-input>
-        <svg-icon
-          class="eye"
-          :name="switchIcon"
-          color="#889aa4"
-          @click="switchStatus"
+          show-password
+          :prefix-icon="Lock"
         />
       </el-form-item>
       <el-button @click="handleLogin" type="primary" :loading="loading">登录</el-button>
@@ -41,17 +30,15 @@
 </template>
 
 <script setup>
+import { User, Lock } from '@element-plus/icons-vue'
 import { login } from "@/api/epgms/account/login";
 import { ElMessage } from "element-plus";
 import { useStore } from "vuex"
 import router from '@/router'
 
-let passwordStatus = true
 let version = import.meta.env.VITE_VERSION
 let systemName = import.meta.env.VITE_SYSTEM_NAME
 let loading = false
-let switchText = "password"
-let switchIcon = "eye"
 
 const loginFormRef = ref(null)
 const loginForm = reactive({
@@ -66,13 +53,8 @@ const store = useStore()
 // 使用 action
 const Login = (params) => store.dispatch('Login', params)
 
-function switchStatus() {
-  passwordStatus = !passwordStatus;
-}
-
 function handleLogin() {
   loginFormRef.value.validate(valid => {
-    console.log(valid)
     if (valid) {
       let params = Object.assign({}, loginForm)
       Login(params).then(res => {
@@ -90,83 +72,14 @@ function handleLogin() {
   })
 }
 
-// export default {
-//   // mixins: [globalProperty],
-//   data() {
-//     return {
-//       // backgroundColor: this.bgColor,
-//       passwordStatus: true,
-//       version: import.meta.env.VITE_VERSION,
-//       systemName: import.meta.env.VITE_SYSTEM_NAME,
-//       loading: false,
-//       switchText: "password",
-//       switchIcon: "eye",
-//       userInfo: {
-//         account: "",
-//         password: "",
-//       },
-//       rules: {
-//         account: [
-//           {
-//             required: true,
-//             message: "请输入登录账号",
-//             trigger: "blur",
-//           },
-//         ],
-//         password: [
-//           { required: true, message: "请输入密码", trigger: "blur" },
-//         ],
-//       },
-//     };
-//   },
-//   watch: {
-//     passwordStatus(newValue) {
-//       if (newValue) {
-//         this.switchText = "password";
-//         this.switchIcon = "eye";
-//       } else {
-//         this.switchText = "text";
-//         this.switchIcon = "eye-open";
-//       }
-//     },
-//   },
-//   methods: {
-//     // 登录
-//     login() {
-//       this.$refs.loginForm.validate((valid) => {
-//         if (valid) {
-//           this.loading = true;
-//           this.$store
-//             .dispatch("LoginAction", {
-//               account: this.userInfo.account,
-//               password: this.userInfo.password,
-//             })
-//             .then((res) => {
-//               this.loading = false;
-//               this.$router.push("/");
-//             })
-//             .catch((err) => {
-//               ElMessage.error(err.message);
-//               this.loading = false;
-//             });
-//         }
-//       });
-//     },
-//     // 显示密码
-//     switchStatus() {
-//       this.passwordStatus = !this.passwordStatus;
-//     },
-//   },
-// };
 </script>
 
-<style lang="stylus">
-@import '../../stylus/variables.styl';
+<style lang="scss" scoped>
 
-#login-container {
+.login-container{
   width: 100vw;
   height: 100vh;
-  background: $backgroundColor;
+  background: #2d3a4b;
 }
 
 .login-form {
@@ -189,20 +102,20 @@ function handleLogin() {
   border-radius: 5px;
 }
 
-#login-container input {
+.login-container input {
   background: transparent !important;
   outline: none;
   border: none;
   padding-left: 59px;
-  color: #fff;
   height: 100%;
 }
 
-#login-container .el-input {
+.login-container .el-input {
+  width: 100%;
   height: 47px;
 }
 
-#login-container .el-form-item__content {
+.login-container .el-form-item__content {
   position: relative;
   margin-left: 0 !important;
 }
@@ -215,7 +128,7 @@ function handleLogin() {
   top: 13px;
 }
 
-#login-container button {
+.login-container button {
   width: 100% !important;
   margin-top: 10px;
 }

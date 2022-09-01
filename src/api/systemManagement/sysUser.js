@@ -7,7 +7,8 @@ export function findByUserId(data) {
   return request({
     url: api + '/findByUserId',
     method: 'get',
-    data
+    data,
+    isParams: true
   })
 }
 
@@ -16,8 +17,7 @@ export function saveUserRole(data) {
   return request({
     url: api + '/saveUserRole',
     method: 'post',
-    data,
-    isParams: true
+    data
   })
 }
 
@@ -26,8 +26,7 @@ export function save(data) {
   return request({
     url: api + '/save',
     method: 'post',
-    data,
-    isParams: true
+    data
   })
 }
 
@@ -36,7 +35,8 @@ export function findById(data) {
   return request({
     url: api + '/findById',
     method: 'get',
-    data
+    data,
+    isParams: true
   })
 }
 
@@ -45,17 +45,17 @@ export function findPage(data) {
   return request({
     url: api + '/findPage',
     method: 'post',
-    data,
-    isParams: true
+    data
   })
 }
 
 // 删除
-export function delSysUser(data) {
+export function deleteById(data) {
   return request({
     url: api + '/deleteById',
     method: 'get',
-    data
+    data,
+    isParams: true
   })
 }
 
@@ -73,8 +73,7 @@ export function logout(data) {
   return request({
     url: api + '/logout',
     method: 'post',
-    data,
-    isParams: true
+    data
   })
 }
 
@@ -82,6 +81,7 @@ export function logout(data) {
 export function getUserInfo() {
   return request({
     url: api + '/getUserInfo',
-    method: 'get'
+    method: 'get',
+    isParams: true
   })
 }
