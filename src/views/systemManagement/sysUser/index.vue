@@ -3,7 +3,7 @@
     <div class="button-wrap">
       <el-button type="success" :icon="Plus" @click="add">新增</el-button>
       <div  class="filter-wrap">
-        <el-input v-model="formData.keyword" placeholder="请输入关键字">
+        <el-input v-model="formData.keyword" clearable placeholder="请输入关键字">
           <template #append>
             <el-button :icon="Search"  @click="handleCurrentChange(1)" />
           </template>
@@ -24,34 +24,21 @@
         label-position="top"
         size="large"
         :model="formData"
-        :rules="rules"
         label-width="100px"
       >
         <el-col :span="24">
-          <el-form-item label="用户名" prop="userName">
-            <el-input v-model="formData.userName" maxlength="30" placeholder="请输入用户名" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item label="手机号" prop="telephone">
-            <el-input v-model="formData.telephone" maxlength="11" placeholder="请输入手机号" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item label="真实姓名" prop="realName">
-            <el-input v-model="formData.realName" maxlength="30" placeholder="请输入真实姓名" />
-          </el-form-item>
-        </el-col>
-        <el-col :span="24">
-          <el-form-item label="电子邮箱" prop="email">
-            <el-input v-model="formData.email" maxlength="30" placeholder="请输入电子邮箱" />
+          <el-form-item label="用户状态">
+            <el-select v-model="formData.userStatus" clearable style="width:100%" placeholder="请选择用户状态">
+              <el-option label="启用" :value="0" />
+              <el-option label="禁用" :value="1" />
+            </el-select>
           </el-form-item>
         </el-col>
       </el-form>
       <template #footer>
         <div style="flex: auto">
-          <el-button size="large">重置</el-button>
-          <el-button type="primary" size="large">搜索</el-button>
+          <el-button size="large" @click="reset">重置</el-button>
+          <el-button type="primary" size="large" @click="handleCurrentChange(1)">搜索</el-button>
         </div>
       </template>
     </el-drawer>
@@ -59,7 +46,7 @@
     <el-table
       ref="singleTable"
       v-loading="loading"
-      height="741"
+      height="640"
       :data="data.tableData"
       border
       highlight-current-row
@@ -69,6 +56,11 @@
       <el-table-column label="序号" width="60px" align="center">
         <template #default="scope">
           {{ (page.pageNum - 1) * page.pageSize + scope.$index + 1 }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="userName" label="用户名" align="center">
+        <template #default="scope">
+          <el-button link type="primary" @click="detail(scope.row)">{{ scope.row.userName }}</el-button>
         </template>
       </el-table-column>
       <el-table-column prop="userName" label="用户名" align="center" />
@@ -87,7 +79,7 @@
     <el-pagination
       background
       :total="data.total"
-      :page-sizes="[10, 20, 30]"
+      :page-sizes="[15, 30, 50]"
       :current-page="page.pageNum"
       :page-size="page.pageSize"
       layout="total, sizes, prev, pager, next, jumper"
@@ -101,11 +93,18 @@
       @refreshData="handleCurrentChange"
       @hideDialog="saveShow = false"
     />
+    <DetailForm
+      v-if="detailshow"
+      :show="detailshow"
+      :sub-object="subObject"
+      @hideDialog="detailshow = false"
+    />
   </div>
 </template>
 
 <script setup>
 import SaveForm from '@/views/systemManagement/sysUser/save.vue'
+import DetailForm from '@/views/systemManagement/sysUser/detail.vue'
 import { Plus, Search, Filter } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { findPage, deleteById } from '@/api/systemManagement/sysUser'
@@ -114,11 +113,12 @@ const singleTable = ref(null)
 let currentRow = ref({})
 // 组件显隐
 let saveShow = ref(false)
+let detailshow = ref(false)
 let drawerShow = ref(false)
 // 父子组件传值
 let subObject = reactive({
-  title: ref('title'),
-  params: ref({})
+	title: ref('title'),
+	params: ref({})
 })
 // 表数据
 const data = reactive({
@@ -128,23 +128,26 @@ const data = reactive({
 // 分页
 const page = reactive({
   pageNum: 1,
-  pageSize: 10,
+  pageSize: 15,
 })
 // 过滤数据
-let formData = ref({
+const formData = reactive({
   keyword: '',
+  userStatus: ''
 })
 
-
+// 初始化数据
 onMounted(() => {
   console.log(`the component is now mounted.`)
   findPageList()
 })
 
+// 按钮点击事件
 const add = () => {
   console.log('add----------')
   saveShow.value = true
   subObject.title = '新增'
+  subObject.params = {}
 }
 const edit = (val) => {
   console.log('edit----------', val)
@@ -152,10 +155,16 @@ const edit = (val) => {
   subObject.title = '编辑'
   subObject.params = val
 }
+const detail = (val) => {
+  console.log('detail----------', val)
+  detailshow.value = true
+  subObject.title = '查看'
+  subObject.params = val
+}
 const del = (val) => {
   ElMessageBox.confirm('是否删除?', '提示', {
-    confirmButtonText: 'OK',
-    cancelButtonText: 'Cancel',
+    confirmButtonText: '确定',
+    cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
     deleteById({
@@ -172,19 +181,33 @@ const del = (val) => {
   })
 }
 
+// 表数据查询
 const handleSizeChange = (val) => {
   if (val) {
-    pageSize.value = val
+    page.pageSize = val
   }
   findPageList()
 }
 const handleCurrentChange = (val) => {
   if (val) {
-    pageNum.value = val
+    page.pageNum = val
   }
   findPageList()
 }
-
+const findPageList = () => {
+  console.log('formData---------', formData)
+  console.log('page---------', page)
+  let params = Object.assign(formData, page)
+  console.log('params---------', params)
+  loading.value = true
+  findPage(params).then(res => {
+    data.tableData = res.data.data
+    data.total = res.data.total
+  }).finally(() => {
+    loading.value = false
+    drawerShow.value = false
+  })
+}
 const rowClick = (val) => {
   // 当前行为空 或者 切换选中行
   if (currentRow !== val) {
@@ -195,19 +218,9 @@ const rowClick = (val) => {
     currentRow = null
   }
 }
-
-function findPageList() {
-  let params = Object.assign(formData, {
-    pageNum: page.pageNum,
-    pageSize: page.pageSize
-  })
-  loading.value = true
-  findPage(params.value).then(res => {
-    data.tableData = res.data.data
-    data.total = res.data.total
-  }).finally(() => {
-    loading.value = false
-  })
+const reset = () => {
+  formData.keyword = ''
+  formData.userStatus = ''
 }
 </script>
 
