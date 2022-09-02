@@ -43,49 +43,25 @@
       </template>
     </el-drawer>
 
-    <el-table
-      ref="singleTable"
-      v-loading="loading"
-      height="640"
-      :data="data.tableData"
-      border
-      highlight-current-row
-      :header-cell-style="{background:'#f5f5f5',color:'#333333'}"
-      @row-click="rowClick"
-    >
-      <el-table-column label="序号" width="60px" align="center">
-        <template #default="scope">
-          {{ (page.pageNum - 1) * page.pageSize + scope.$index + 1 }}
-        </template>
-      </el-table-column>
-      <el-table-column prop="userName" label="用户名" align="center">
-        <template #default="scope">
-          <el-button link type="primary" @click="detail(scope.row)">{{ scope.row.userName }}</el-button>
-        </template>
-      </el-table-column>
-      <el-table-column prop="userName" label="用户名" align="center" />
-      <el-table-column prop="telephone" label="手机号" align="center" />
-      <el-table-column prop="realName" label="姓名" align="center" />
-      <el-table-column prop="email" label="邮箱" align="center" />
-      <el-table-column fixed="right" label="操作" width="120" align="center">
-        <template #default="scope">
-          <el-button link type="primary" @click="edit(scope.row)">编辑</el-button>
-          <el-button link type="danger" @click="del(scope.row)">删除</el-button>
-        </template>
-      </el-table-column>
-    </el-table>
-
-    <!-- 分页组件 -->
-    <el-pagination
-      background
-      :total="data.total"
-      :page-sizes="[15, 30, 50]"
-      :current-page="page.pageNum"
-      :page-size="page.pageSize"
-      layout="total, sizes, prev, pager, next, jumper"
-      @size-change="handleSizeChange"
-      @current-change="handleCurrentChange"
+    <!-- 表组件 -->
+    <MTable
+      :tableFilter="tableFilter"
+      :tableData="tableData"
+      :tableColumn="tableColumn"
+      :loading="loading"
+      :pageNum="pageNum"
+      :pageSize="pageSize"
     />
+    <!-- 分页组件 -->
+    <MPagination
+      :total="total"
+      :pageNum="pageNum"
+      :pageSize="pageSize"
+      :pageSizes="[15, 30, 50]"
+      @handleCurrentChange="handleCurrentChange"
+      @handleSizeChange="handleSizeChange"
+    />
+
     <SaveForm
       v-if="saveShow"
       :show="saveShow"
@@ -108,9 +84,7 @@ import DetailForm from '@/views/systemManagement/sysUser/detail.vue'
 import { Plus, Search, Filter } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { findPage, deleteById } from '@/api/systemManagement/sysUser'
-const loading = ref(false)
-const singleTable = ref(null)
-let currentRow = ref({})
+import { userStatusFilter, sexFilter } from '@/dataMap/index'
 // 组件显隐
 let saveShow = ref(false)
 let detailshow = ref(false)
@@ -120,21 +94,82 @@ let subObject = reactive({
 	title: ref('title'),
 	params: ref({})
 })
-// 表数据
-const data = reactive({
-  total: 0,
-  tableData: []
-})
-// 分页
-const page = reactive({
-  pageNum: 1,
-  pageSize: 15,
-})
 // 过滤数据
 const formData = reactive({
   keyword: '',
   userStatus: ''
 })
+
+const state = reactive({
+  total: 0,
+  pageNum: 1,
+  pageSize: 15,
+  loading: false,
+  tableFilter: {
+    userStatusFilter: userStatusFilter,
+    sexFilter: sexFilter,
+  },
+  tableData: [],
+  tableColumn: [{
+    width: '60',
+    align: 'center',
+    label: '序号',
+    rowNumber: true
+  }, {
+    prop: 'userName',
+    align: 'center',
+    label: '用户名',
+    btn: [{
+      type: 'primary',
+      func: detail
+    }]
+  }, {
+    prop: 'telephone',
+    align: 'center',
+    label: '手机号'
+  }, {
+    prop: 'realName',
+    align: 'center',
+    label: '姓名'
+  }, {
+    prop: 'email',
+    align: 'center',
+    label: '邮箱'
+  }, {
+    prop: 'sex',
+    align: 'center',
+    label: '性别',
+    filter: true
+  }, {
+    prop: 'userStatus',
+    align: 'center',
+    label: '用户状态',
+    tag: true
+  }, {
+    fixed: 'right',
+    width: '120',
+    align: 'center',
+    label: '操作',
+    btn: [{
+      name: '编辑',
+      type: 'primary',
+      func: edit
+    }, {
+      name: '删除',
+      type: 'danger',
+      func: del
+    }]
+  }]
+})
+const {
+  total,
+  pageNum,
+  pageSize,
+  loading,
+  tableFilter,
+  tableData,
+  tableColumn,
+} = toRefs(state)
 
 // 初始化数据
 onMounted(() => {
@@ -143,25 +178,25 @@ onMounted(() => {
 })
 
 // 按钮点击事件
-const add = () => {
+function add() {
   console.log('add----------')
   saveShow.value = true
   subObject.title = '新增'
   subObject.params = {}
 }
-const edit = (val) => {
+function edit(val) {
   console.log('edit----------', val)
   saveShow.value = true
   subObject.title = '编辑'
   subObject.params = val
 }
-const detail = (val) => {
+function detail(val) {
   console.log('detail----------', val)
   detailshow.value = true
   subObject.title = '查看'
   subObject.params = val
 }
-const del = (val) => {
+function del(val) {
   ElMessageBox.confirm('是否删除?', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
@@ -175,50 +210,40 @@ const del = (val) => {
         message: '删除成功',
         showClose: true
       })
-      handleCurrentChange()
+      handleCurrentChange(1)
     })
   }).catch(() => {
   })
 }
 
 // 表数据查询
-const handleSizeChange = (val) => {
+function handleSizeChange(val) {
   if (val) {
-    page.pageSize = val
+    state.pageSize = val
   }
   findPageList()
 }
-const handleCurrentChange = (val) => {
+function handleCurrentChange(val) {
   if (val) {
-    page.pageNum = val
+    state.pageNum = val
   }
   findPageList()
 }
-const findPageList = () => {
-  console.log('formData---------', formData)
-  console.log('page---------', page)
-  let params = Object.assign(formData, page)
-  console.log('params---------', params)
-  loading.value = true
+function findPageList() {
+  let params = Object.assign(formData, {
+    pageNum: pageNum,
+    pageSize: pageSize,
+  })
+  state.loading = true
   findPage(params).then(res => {
-    data.tableData = res.data.data
-    data.total = res.data.total
+    state.tableData = res.data.data
+    state.total = res.data.total
   }).finally(() => {
-    loading.value = false
+    state.loading = false
     drawerShow.value = false
   })
 }
-const rowClick = (val) => {
-  // 当前行为空 或者 切换选中行
-  if (currentRow !== val) {
-    currentRow = val
-  } else {
-    // 取消高亮状态
-    singleTable.value.setCurrentRow(null)
-    currentRow = null
-  }
-}
-const reset = () => {
+function reset() {
   formData.keyword = ''
   formData.userStatus = ''
 }
