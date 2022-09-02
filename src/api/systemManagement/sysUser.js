@@ -3,9 +3,9 @@ import request from '@/utils/request'
 const api = 'user-server/sysUser'
 
 // 根据用户信息查询角色
-export function findByUserId(data) {
+export function findUserRole(data) {
   return request({
-    url: api + '/findByUserId',
+    url: api + '/findUserRole',
     method: 'get',
     data,
     isParams: true

@@ -10,6 +10,12 @@
       :header-cell-style="{background:'#f5f5f5',color:'#333333'}"
       @row-click="rowClick"
     >
+      <el-table-column v-if="rowNumber" align="center" label="序号" width="60">
+        <template #default="scope">
+          <div v-if="pageNum && pageSize">{{ (pageNum - 1) * pageSize + scope.$index + 1 }}</div>
+          <div v-else>{{ scope.$index + 1 }}</div>
+        </template>
+      </el-table-column>
       <el-table-column
         v-for="(item, index) in tableColumn"
         :key="index"
@@ -21,7 +27,6 @@
         show-overflow-tooltip
       >
         <template #default="scope">
-          <div v-if="item.rowNumber">{{ (pageNum - 1) * pageSize + scope.$index + 1 }}</div>
           <div v-if="item.btn"> 
             <el-button v-for="(btn, i) in item.btn" :key="i" link :type="btn.type" @click="btn.func(scope.row)">
               {{ btn.name || scope.row[item.prop] || '' }}
@@ -56,6 +61,11 @@ const props = defineProps({
     type: Object,
     default: () => {}
   },
+  // 是否显示序号
+  rowNumber: {
+    type: Boolean,
+    default: true
+  },
   // 是否显示加载图标
   loading: {
     type: Boolean,
@@ -81,6 +91,8 @@ const props = defineProps({
     default: '640'
   },
 })
+// 子组件回调
+const emits = defineEmits()
 
 // table ref
 const singleTable = ref(null)
@@ -117,5 +129,9 @@ const rowClick = (val) => {
     singleTable.value.setCurrentRow(null)
     currentRow.value = null
   }
+  emits('getCurrentRow', currentRow.value)
 }
 </script>
+
+<style lang='scss' scoped>
+</style>

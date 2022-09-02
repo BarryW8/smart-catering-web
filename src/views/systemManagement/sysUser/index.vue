@@ -1,8 +1,11 @@
 <template>
   <div class="container">
     <div class="button-wrap">
-      <el-button type="success" :icon="Plus" @click="add">新增</el-button>
-      <div  class="filter-wrap">
+      <div>
+        <el-button type="success" :icon="Plus" @click="add">新增</el-button>
+        <el-button type="primary" :icon="Avatar" @click="userRole">授权角色</el-button>
+      </div>
+      <div class="filter-wrap">
         <el-input v-model="formData.keyword" clearable placeholder="请输入关键字">
           <template #append>
             <el-button :icon="Search"  @click="handleCurrentChange(1)" />
@@ -51,43 +54,51 @@
       :loading="loading"
       :pageNum="pageNum"
       :pageSize="pageSize"
+      @getCurrentRow="getCurrentRow"
     />
     <!-- 分页组件 -->
     <MPagination
       :total="total"
       :pageNum="pageNum"
       :pageSize="pageSize"
-      :pageSizes="[15, 30, 50]"
       @handleCurrentChange="handleCurrentChange"
       @handleSizeChange="handleSizeChange"
     />
 
-    <SaveForm
+    <Save
       v-if="saveShow"
       :show="saveShow"
       :sub-object="subObject"
       @refreshData="handleCurrentChange"
       @hideDialog="saveShow = false"
     />
-    <DetailForm
-      v-if="detailshow"
-      :show="detailshow"
+    <Detail
+      v-if="detailShow"
+      :show="detailShow"
       :sub-object="subObject"
-      @hideDialog="detailshow = false"
+      @hideDialog="detailShow = false"
+    />
+    <UserRole
+      v-if="userRoleShow"
+      :show="userRoleShow"
+      :sub-object="subObject"
+      @hideDialog="userRoleShow = false"
     />
   </div>
 </template>
 
 <script setup>
-import SaveForm from '@/views/systemManagement/sysUser/save.vue'
-import DetailForm from '@/views/systemManagement/sysUser/detail.vue'
-import { Plus, Search, Filter } from '@element-plus/icons-vue'
+import Save from '@/views/systemManagement/sysUser/save.vue'
+import Detail from '@/views/systemManagement/sysUser/detail.vue'
+import UserRole from '@/views/systemManagement/sysUser/userRole.vue'
+import { Plus, Search, Filter, Avatar } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { findPage, deleteById } from '@/api/systemManagement/sysUser'
 import { userStatusFilter, sexFilter } from '@/dataMap/index'
 // 组件显隐
 let saveShow = ref(false)
-let detailshow = ref(false)
+let detailShow = ref(false)
+let userRoleShow = ref(false)
 let drawerShow = ref(false)
 // 父子组件传值
 let subObject = reactive({
@@ -104,6 +115,7 @@ const state = reactive({
   total: 0,
   pageNum: 1,
   pageSize: 15,
+  currentRow: null,
   loading: false,
   tableFilter: {
     userStatusFilter: userStatusFilter,
@@ -111,11 +123,6 @@ const state = reactive({
   },
   tableData: [],
   tableColumn: [{
-    width: '60',
-    align: 'center',
-    label: '序号',
-    rowNumber: true
-  }, {
     prop: 'userName',
     align: 'center',
     label: '用户名',
@@ -165,10 +172,11 @@ const {
   total,
   pageNum,
   pageSize,
+  currentRow,
   loading,
   tableFilter,
   tableData,
-  tableColumn,
+  tableColumn
 } = toRefs(state)
 
 // 初始化数据
@@ -192,9 +200,23 @@ function edit(val) {
 }
 function detail(val) {
   console.log('detail----------', val)
-  detailshow.value = true
+  detailShow.value = true
   subObject.title = '查看'
   subObject.params = val
+}
+function userRole() {
+  console.log('userRole----------', state.currentRow)
+  if (!state.currentRow) {
+    ElMessage({
+      type: 'warning',
+      message: '请选择需要操作的记录',
+      showClose: true
+    })
+    return
+  }
+  userRoleShow.value = true
+  subObject.title = '授权角色'
+  subObject.params = state.currentRow
 }
 function del(val) {
   ElMessageBox.confirm('是否删除?', '提示', {
@@ -243,6 +265,9 @@ function findPageList() {
     drawerShow.value = false
   })
 }
+function getCurrentRow(val) {
+  state.currentRow = val
+}
 function reset() {
   formData.keyword = ''
   formData.userStatus = ''
@@ -263,15 +288,5 @@ function reset() {
 }
 .filter-wrap {
   display: flex;
-}
-.el-pagination {
-  background: #fff;
-  padding: 16px;
-  justify-content: center;  //居中
-  //float: left;居左
-  //float: right;居右
-}
-:deep(.el-pagination.is-background .el-pager li:not(.is-disabled).is-active) {
-  background-color: #ff9800 !important; //修改默认的背景色
 }
 </style>

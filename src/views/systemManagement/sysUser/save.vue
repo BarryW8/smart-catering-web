@@ -77,7 +77,6 @@
   </div>
 </template>
 <script setup>
-// 拖拽弹窗
 import { ElMessage } from 'element-plus'
 import { save, findById } from '@/api/systemManagement/sysUser'
 // 父组件传值
