@@ -1,21 +1,21 @@
 <template>
   <div v-if="showTabs" class="tabs-wrap">
-    <div v-if="tagName.length > 0">
+    <div v-if="selectList.length > 0">
       <el-tag
-        v-for="(name, index) in tagName"
+        v-for="(item, index) in selectList"
         :key="index"
-        :type="name"
+        :type="item[tabField]"
         closable
         class="tabs-item"
-        @close="handleTagClose(name, index)"
+        @close="handleTagClose(item[tabField], index)"
       >
-        {{ name }}
+        {{ item[tabField] }}
       </el-tag>
     </div>
     <div v-else>{{ '暂无选中记录' }}</div>
   </div>
   <el-table
-    ref="multipleTable"
+    ref="multipleTableRef"
     v-loading="loading"
     :element-loading-text="loadingText"
     :height="height"
@@ -114,6 +114,7 @@ const props = defineProps({
     type: String,
     default: '640'
   },
+  // 是否显示tab
   showTabs: {
     type: Boolean,
     default: false
@@ -129,32 +130,27 @@ const props = defineProps({
     default: false
   }
 })
-const { selectIds, isSingle } = toRefs(props)
+// const { selectIds } = toRefs(props) // 这样可以让子组件内的变量接收父组件的值并操作数据
 // 子组件回调
 const emits = defineEmits()
 
 // table ref
-const multipleTable = ref(null)
-// 选中行
-const multipleSelection = ref([])
+const multipleTableRef = ref(null)
 
 const state = reactive({
-  selectIds: selectIds, // 选中ID集合
   selectList: [], // 选中记录集合
-  tagName: [], // 选中名称集合
 })
-const { selectList, tagName } = toRefs(state)
+const { selectList } = toRefs(state)
 
 watch(
   () => props.tableData,
   (val) => {
-    console.log('watch--------', state.selectIds)
     // 复选框勾选
     nextTick(() => {
       val.forEach(item => {
-        console.log('watch--------', state.selectIds.indexOf(item.id) > -1)
-        if (state.selectIds.indexOf(item.id) > -1) {
-          multipleTable.value.toggleRowSelection(item)
+        if (props.selectIds.indexOf(item.id) > -1) {
+          state.selectList.push(item)
+          multipleTableRef.value.toggleRowSelection(item)
         }
       })
     })
@@ -180,89 +176,71 @@ const filter = computed(() => {
 
 // 复选框只选中单行
 function handleSelectionChange(val) {
-  if (!isSingle.value) {
+  if (!props.isSingle) {
     return
   }
   if (val.length > 1) {
     // 重置列表的选中
-    multipleTable.value.clearSelection()
+    multipleTableRef.value.clearSelection()
     // val还是多选的数组，设置为每次只选中数组的最后一个
-    multipleTable.value.toggleRowSelection(val[val.length - 1])
+    multipleTableRef.value.toggleRowSelection(val[val.length - 1])
   } else {
-    state.selectIds = []
     state.selectList = []
-    state.tagName = []
-    console.log(state.selectList)
     if (val.length === 1) {
       let lastOne = val[val.length - 1]
-      state.selectIds.push(lastOne.id)
       state.selectList.push(lastOne)
-      state.tagName.push(lastOne[props.tabField])
     }
-    console.log(state.selectList)
   }
 }
 // 点击行勾选复选框
 function toggleSelection(row) {
-  multipleTable.value.toggleRowSelection(row)
+  multipleTableRef.value.toggleRowSelection(row)
   console.log('---------row', row)
-  if (isSingle.value) {
+  if (props.isSingle) {
     return
   }
-  if (state.selectIds.indexOf(row.id) > -1) {
+  var index = state.selectList.findIndex(item => item.id === row.id)
+  if (index > -1) {
     // 去勾
-    var index = state.selectIds.findIndex(item => item === row.id)
-    state.selectIds.splice(index, 1)
     state.selectList.splice(index, 1)
-    state.tagName.splice(index, 1)
   } else {
     // 勾选
-    state.selectIds.push(row.id)
     state.selectList.push(row)
-    state.tagName.push(row[props.tabField])
   }
 }
 // 勾选记录
 function handleSelect(selection, row) {
   // console.log('---------selection', selection)
   console.log('---------row', row)
-  if (isSingle.value) {
+  if (props.isSingle) {
     return
   }
-  if (state.selectIds.indexOf(row.id) > -1) {
+  var index = state.selectList.findIndex(item => item.id === row.id)
+  if (index > -1) {
     // 去勾
-    var index = state.selectIds.findIndex(item => item === row.id)
-    state.selectIds.splice(index, 1)
     state.selectList.splice(index, 1)
-    state.tagName.splice(index, 1)
   } else {
     // 勾选
-    state.selectIds.push(row.id)
     state.selectList.push(row)
-    state.tagName.push(row[props.tabField])
   }
 }
 // 全选
 function handleSelectAll(selection) {
   console.log('---------selection', selection)
-  if (isSingle.value) {
+  if (props.isSingle) {
     return
   }
   var flag = selection.length === 0
-  props.tableData.forEach(item => {
-    var index = state.selectIds.indexOf(item.id)
+  props.tableData.forEach(row => {
+    var index = state.selectList.findIndex(item => item.id === row.id)
     console.log(index)
     if (flag) {
       // 反选
-      state.selectIds.splice(index, 1)
       state.selectList.splice(index, 1)
-      state.tagName.splice(index, 1)
     } else {
       // 全选
       if (index === -1) {
-        state.selectIds.push(item.id)
-        state.selectList.push(item)
-        state.tagName.push(item[props.tabField])
+        state.selectList.push(row)
       }
     }
   })
@@ -270,13 +248,11 @@ function handleSelectAll(selection) {
 // 关闭tag
 function handleTagClose(name, index) {
   // 删除下标元素
-  state.tagName.splice(index, 1)
-  state.selectIds.splice(index, 1)
   state.selectList.splice(index, 1)
   // 去勾
   props.tableData.forEach(row => {
     if (row[props.tabField] === name) {
-      multipleTable.value.toggleRowSelection(row, false)
+      multipleTableRef.value.toggleRowSelection(row, false)
     }
   })
 }
