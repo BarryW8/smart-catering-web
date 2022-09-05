@@ -131,17 +131,19 @@ const props = defineProps({
   }
 })
 // const { selectIds } = toRefs(props) // 这样可以让子组件内的变量接收父组件的值并操作数据
-// 子组件回调
+/**
+ * 子组件回调
+ */
 const emits = defineEmits()
 
 // table ref
 const multipleTableRef = ref(null)
-
 const state = reactive({
   selectList: [], // 选中记录集合
 })
 const { selectList } = toRefs(state)
 
+// 监听图表数据变化，回显勾选记录
 watch(
   () => props.tableData,
   (val) => {
@@ -157,9 +159,7 @@ watch(
   }
 )
 
-/**
- * 过滤方法
- */
+// 过滤方法
 const filter = computed(() => {
   return (val, field) => {
     if (!val || !field) {
