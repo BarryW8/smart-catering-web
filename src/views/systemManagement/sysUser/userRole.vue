@@ -8,10 +8,12 @@
   >
     <MTableMultiple
       ref="mTableMultiple"
+      :isSingle="true"
       :tableData="tableData"
       :tableColumn="tableColumn"
       :selectIds="selectIds"
       height="440"
+      tabField="roleName"
       :loading="loading"
       :pageNum="pageNum"
       :pageSize="pageSize"
@@ -133,9 +135,9 @@ async function handleSave() {
     userId: props.subObject.params.id,
     roleId: selectList && selectList.length > 0 ? selectList[0].id : null
   }
-  console.log(params)
+  // console.log(params)
   saveUserRole(params).then(res => {
-    console.log('handleSave-------', res)
+    // console.log('handleSave-------', res)
     ElMessage({
       type: 'success',
       message: '保存成功',

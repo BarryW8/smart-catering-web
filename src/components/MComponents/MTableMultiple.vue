@@ -22,9 +22,11 @@
     :data="tableData"
     border
     :header-cell-style="{background:'#f5f5f5',color:'#333333'}"
+    :class="{'hideSelectAll': isSingle}"
     @select="handleSelect"
     @select-all="handleSelectAll"
     @row-click="toggleSelection"
+    @selection-change="handleSelectionChange"
   >
     <el-table-column v-if="rowNumber" align="center" label="序号" width="60">
       <template #default="scope">
@@ -59,8 +61,6 @@
   </el-table>
 </template>
 <script setup>
-import { nextTick, reactive } from "vue-demi"
-
 /**
  * 父组件传值
  */
@@ -118,12 +118,18 @@ const props = defineProps({
     type: Boolean,
     default: false
   },
+  // tab显示字段名称
   tabField: {
     type: String,
     default: 'name'
+  },
+  // 是否单选
+  isSingle: {
+    type: Boolean,
+    default: false
   }
 })
-const { selectIds } = toRefs(props)
+const { selectIds, isSingle } = toRefs(props)
 // 子组件回调
 const emits = defineEmits()
 
@@ -171,19 +177,38 @@ const filter = computed(() => {
     return ''
   }
 })
-// const handleSelectionChange = (val) => {
-//   console.log(val)
-//   multipleSelection.value = val
-// }
-// // 点击行勾选复选框
-// function toggleSelection(row) {
-//   multipleTable.value.toggleRowSelection(row)
-// }
 
+// 复选框只选中单行
+function handleSelectionChange(val) {
+  if (!isSingle.value) {
+    return
+  }
+  if (val.length > 1) {
+    // 重置列表的选中
+    multipleTable.value.clearSelection()
+    // val还是多选的数组，设置为每次只选中数组的最后一个
+    multipleTable.value.toggleRowSelection(val[val.length - 1])
+  } else {
+    state.selectIds = []
+    state.selectList = []
+    state.tagName = []
+    console.log(state.selectList)
+    if (val.length === 1) {
+      let lastOne = val[val.length - 1]
+      state.selectIds.push(lastOne.id)
+      state.selectList.push(lastOne)
+      state.tagName.push(lastOne[props.tabField])
+    }
+    console.log(state.selectList)
+  }
+}
 // 点击行勾选复选框
 function toggleSelection(row) {
   multipleTable.value.toggleRowSelection(row)
   console.log('---------row', row)
+  if (isSingle.value) {
+    return
+  }
   if (state.selectIds.indexOf(row.id) > -1) {
     // 去勾
     var index = state.selectIds.findIndex(item => item === row.id)
@@ -201,6 +226,9 @@ function toggleSelection(row) {
 function handleSelect(selection, row) {
   // console.log('---------selection', selection)
   console.log('---------row', row)
+  if (isSingle.value) {
+    return
+  }
   if (state.selectIds.indexOf(row.id) > -1) {
     // 去勾
     var index = state.selectIds.findIndex(item => item === row.id)
@@ -217,6 +245,9 @@ function handleSelect(selection, row) {
 // 全选
 function handleSelectAll(selection) {
   console.log('---------selection', selection)
+  if (isSingle.value) {
+    return
+  }
   var flag = selection.length === 0
   props.tableData.forEach(item => {
     var index = state.selectIds.indexOf(item.id)
@@ -254,24 +285,10 @@ function handleTagClose(name, index) {
 defineExpose({ getData });
 function getData() {
   return new Promise(resolve => {
+    console.log(state.selectList)
     resolve(state.selectList)
   })
 }
-
-/**
- * 行点击事件
- */
-// const rowClick = (val) => {
-//   // 当前行为空 或者 切换选中行
-//   if (currentRow.value !== val) {
-//     currentRow.value = val
-//   } else {
-//     // 取消高亮状态
-//     singleTable.value.setCurrentRow(null)
-//     currentRow.value = null
-//   }
-//   emits('getCurrentRow', currentRow.value)
-// }
 </script>
 
 <style lang='scss' scoped>
@@ -286,5 +303,13 @@ function getData() {
     font-size: 16px;
     margin-right: 8px;
     margin-top: 8px;
+  }
+  /* 禁用table表头的全选框 */
+  .hideSelectAll {
+    :deep(.el-table__header-wrapper) {
+      .el-checkbox__inner {
+        display: none !important;
+      }
+    }
   }
 </style>
