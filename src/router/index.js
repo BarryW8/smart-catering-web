@@ -68,6 +68,13 @@ export const asyncRoutes = [
           title: "角色管理",
         },
       },
+      {
+        path: "dictionary",
+        component: () => import("@/views/systemManagement/dictionary/index.vue"),
+        meta: {
+          title: "字典管理",
+        },
+      },
     ],
   },
   {

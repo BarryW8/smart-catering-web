@@ -1,20 +1,6 @@
 <template>
-  <div v-if="showTabs" class="tabs-wrap">
-    <div v-if="selectList.length > 0">
-      <el-tag
-        v-for="(item, index) in selectList"
-        :key="index"
-        closable
-        class="tabs-item"
-        @close="handleTagClose(item[tabField], index)"
-      >
-        {{ item[tabField] }}
-      </el-tag>
-    </div>
-    <div v-else>{{ '暂无选中记录' }}</div>
-  </div>
   <el-table
-    ref="multipleTableRef"
+    ref="treeTableRef"
     v-loading="loading"
     :element-loading-text="loadingText"
     :height="height"
@@ -22,17 +8,14 @@
     border
     :header-cell-style="{background:'#f5f5f5',color:'#333333'}"
     :class="{'hideSelectAll': isSingle}"
+    row-key="id"
+    :tree-props="{ children: 'children', hasChildren: 'hasChildren' }"
     @select="handleSelect"
     @select-all="handleSelectAll"
     @row-click="toggleSelection"
     @selection-change="handleSelectionChange"
   >
-    <el-table-column v-if="rowNumber" align="center" label="序号" width="60">
-      <template #default="scope">
-        <div v-if="pageNum && pageSize">{{ (pageNum - 1) * pageSize + scope.$index + 1 }}</div>
-        <div v-else>{{ scope.$index + 1 }}</div>
-      </template>
-    </el-table-column>
+    <el-table-column v-if="rowNumber" type="index" align="center" label="序号" width="60" />
     <el-table-column type="selection" align="center" width="55" />
     <el-table-column
       v-for="(item, index) in tableColumn"
@@ -45,16 +28,16 @@
       show-overflow-tooltip
     >
       <template #default="scope">
-        <div v-if="item.btn"> 
+        <span v-if="item.btn"> 
           <el-button v-for="(btn, i) in item.btn" :key="i" link :type="btn.type" @click="btn.func(scope.row)">
             {{ btn.name || scope.row[item.prop] || '' }}
           </el-button>
-        </div>
-        <div v-else-if="item.tag"> 
+        </span>
+        <span v-else-if="item.tag"> 
           <el-tag size="small" :type="filter(scope.row, item.prop).type">{{ filter(scope.row, item.prop).label || '' }}</el-tag>
-        </div>
-        <div v-else-if="item.filter">{{ filter(scope.row, item.prop).label || '' }}</div>
-        <div v-else>{{ scope.row[item.prop] || '' }}</div>
+        </span>
+        <span v-else-if="item.filter">{{ filter(scope.row, item.prop).label || '' }}</span>
+        <span v-else>{{ scope.row[item.prop] || '' }}</span>
       </template>
     </el-table-column>
   </el-table>
@@ -136,7 +119,7 @@ const { selectList } = toRefs(props) // 这样可以让子组件内的变量接�
 const emits = defineEmits()
 
 // table ref
-const multipleTableRef = ref(null)
+const treeTableRef = ref(null)
 const state = reactive({
   selectList: selectList, // 选中记录集合
 })
@@ -151,7 +134,7 @@ watch(
       val.forEach(row => {
         let index = props.selectList.findIndex(item => row.id === item.id)
         if (index > -1) {
-          multipleTableRef.value.toggleRowSelection(row)
+          treeTableRef.value.toggleRowSelection(row)
         }
       })
     })
@@ -180,22 +163,20 @@ function handleSelectionChange(val) {
   }
   if (val.length > 1) {
     // 重置列表的选中
-    multipleTableRef.value.clearSelection()
+    treeTableRef.value.clearSelection()
     // val还是多选的数组，设置为每次只选中数组的最后一个
-    multipleTableRef.value.toggleRowSelection(val[val.length - 1])
+    treeTableRef.value.toggleRowSelection(val[val.length - 1])
   } else {
     state.selectList.splice(0)
-    console.log(state.selectList)
     if (val.length === 1) {
       let lastOne = val[val.length - 1]
       state.selectList.push(lastOne)
     }
-    console.log(state.selectList)
   }
 }
 // 点击行勾选复选框
 function toggleSelection(row) {
-  multipleTableRef.value.toggleRowSelection(row)
+  treeTableRef.value.toggleRowSelection(row)
   console.log('---------row', row)
   if (props.isSingle) {
     return
@@ -253,7 +234,7 @@ function handleTagClose(name, index) {
   // 去勾
   props.tableData.forEach(row => {
     if (row[props.tabField] === name) {
-      multipleTableRef.value.toggleRowSelection(row, false)
+      treeTableRef.value.toggleRowSelection(row, false)
     }
   })
 }
