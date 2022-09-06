@@ -79,7 +79,6 @@
 <script setup>
 import { ElMessage } from 'element-plus'
 import * as sysUser from '@/api/systemManagement/sysUser'
-import { reactive } from 'vue-demi'
 // 父组件传值
 const props = defineProps(['show', 'subObject'])
 // 子组件回调

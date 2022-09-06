@@ -4,7 +4,6 @@
       <el-tag
         v-for="(item, index) in selectList"
         :key="index"
-        :type="item[tabField]"
         closable
         class="tabs-item"
         @close="handleTagClose(item[tabField], index)"
@@ -61,6 +60,8 @@
   </el-table>
 </template>
 <script setup>
+import { onMounted } from "vue-demi"
+
 /**
  * 父组件传值
  */
@@ -80,8 +81,8 @@ const props = defineProps({
     type: Object,
     default: () => {}
   },
-  // 选中ID集合
-  selectIds: {
+  // 回显选中集合
+  selectList: {
     type: Array,
     default: () => []
   },
@@ -130,7 +131,7 @@ const props = defineProps({
     default: false
   }
 })
-// const { selectIds } = toRefs(props) // 这样可以让子组件内的变量接收父组件的值并操作数据
+const { selectList } = toRefs(props) // 这样可以让子组件内的变量接收父组件的值并操作数据
 /**
  * 子组件回调
  */
@@ -139,9 +140,9 @@ const emits = defineEmits()
 // table ref
 const multipleTableRef = ref(null)
 const state = reactive({
-  selectList: [], // 选中记录集合
+  selectList: selectList, // 选中记录集合
 })
-const { selectList } = toRefs(state)
+// const { selectList } = toRefs(state)
 
 // 监听图表数据变化，回显勾选记录
 watch(
@@ -149,15 +150,21 @@ watch(
   (val) => {
     // 复选框勾选
     nextTick(() => {
-      val.forEach(item => {
-        if (props.selectIds.indexOf(item.id) > -1) {
-          state.selectList.push(item)
-          multipleTableRef.value.toggleRowSelection(item)
+      val.forEach(row => {
+        let index = props.selectList.findIndex(item => row.id === item.id)
+        if (index > -1) {
+          multipleTableRef.value.toggleRowSelection(row)
         }
       })
     })
   }
 )
+onMounted(() => {
+  console.log(props.selectList)
+  // nextTick(() => {
+  //   state.selectList = JSON.parse(JSON.stringify(props.selectList))
+  // })
+})
 
 // 过滤方法
 const filter = computed(() => {
@@ -185,11 +192,13 @@ function handleSelectionChange(val) {
     // val还是多选的数组，设置为每次只选中数组的最后一个
     multipleTableRef.value.toggleRowSelection(val[val.length - 1])
   } else {
-    state.selectList = []
+    state.selectList.splice(0)
+    console.log(state.selectList)
     if (val.length === 1) {
       let lastOne = val[val.length - 1]
       state.selectList.push(lastOne)
     }
+    console.log(state.selectList)
   }
 }
 // 点击行勾选复选框

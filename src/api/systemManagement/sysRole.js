@@ -3,11 +3,12 @@ import request from '@/utils/request'
 const api = 'user-server/sysRole'
 
 // 根据角色信息查询用户
-export function findByRoleId(data) {
+export function findRoleUser(data) {
   return request({
-    url: api + '/findByRoleId',
+    url: api + '/findRoleUser',
     method: 'get',
-    data
+    data,
+    isParams: true
   })
 }
 
@@ -16,8 +17,7 @@ export function saveRoleUser(data) {
   return request({
     url: api + '/saveRoleUser',
     method: 'post',
-    data,
-    isParams: true
+    data
   })
 }
 
@@ -26,8 +26,7 @@ export function save(data) {
   return request({
     url: api + '/save',
     method: 'post',
-    data,
-    isParams: true
+    data
   })
 }
 
@@ -36,7 +35,8 @@ export function findById(data) {
   return request({
     url: api + '/findById',
     method: 'get',
-    data
+    data,
+    isParams: true
   })
 }
 
@@ -45,8 +45,7 @@ export function findPage(data) {
   return request({
     url: api + '/findPage',
     method: 'post',
-    data,
-    isParams: true
+    data
   })
 }
 
@@ -55,6 +54,7 @@ export function deleteById(data) {
   return request({
     url: api + '/deleteById',
     method: 'get',
-    data
+    data,
+    isParams: true
   })
 }

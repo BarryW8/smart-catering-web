@@ -19,7 +19,7 @@
           <el-descriptions-item label="真实姓名">{{ formData.realName }}</el-descriptions-item>
           <el-descriptions-item label="电子邮箱">{{ formData.email }}</el-descriptions-item>
           <el-descriptions-item label="用户状态">
-            <el-tag>{{ filter(formData, 'userStatus').label || '' }}</el-tag>
+            <el-tag :type="filter(formData, 'userStatus').type">{{ filter(formData, 'userStatus').label || '' }}</el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="性别">{{ filter(formData, 'sex').label || '' }}</el-descriptions-item>
           <el-descriptions-item label="备注" :span="2">{{ formData.note }}</el-descriptions-item>

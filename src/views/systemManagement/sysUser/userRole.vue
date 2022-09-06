@@ -9,11 +9,12 @@
     <MTableMultiple
       ref="mTableMultiple"
       :isSingle="true"
+      :showTabs="true"
       :tableData="tableData"
       :tableColumn="tableColumn"
-      :selectIds="selectIds"
+      :selectList="selectList"
       height="440"
-      tabField="roleName"
+      :tabField="tabField"
       :loading="loading"
       :pageNum="pageNum"
       :pageSize="pageSize"
@@ -43,7 +44,7 @@ import * as sysRole from '@/api/systemManagement/sysRole'
 // 父组件传值
 const props = defineProps(['show', 'subObject'])
 // 子组件回调
-const emits = defineEmits()
+const emits = defineEmits(['hideDialog'])
 
 const mTableMultiple = ref(null)
 
@@ -56,12 +57,13 @@ const state = reactive({
   pageNum: 1,
   pageSize: 10,
   loading: false,
-  selectIds: [],
+  selectList: [],
   tableData: [],
+  tabField: 'roleName',
   tableColumn: [{
     prop: 'roleName',
     align: 'center',
-    label: '角色名称'
+    label: '角色名'
   }]
 })
 const {
@@ -70,8 +72,9 @@ const {
   pageSize,
   height,
   loading,
-  selectIds,
+  selectList,
   tableData,
+  tabField,
   tableColumn
 } = toRefs(state)
 
@@ -119,7 +122,10 @@ const findUserRole = () => {
     sysUser.findUserRole({
       modelId: props.subObject.params.id
     }).then(res => {
-      state.selectIds = res.data || []
+      res.data.forEach(item => {
+        item.id = item.roleId
+        state.selectList.push(item)
+      })
       resolve(res)
     }).finally(() => {
       state.loading = false
