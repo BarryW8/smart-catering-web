@@ -93,24 +93,27 @@ import Detail from '@/views/systemManagement/sysUser/detail.vue'
 import UserRole from '@/views/systemManagement/sysUser/userRole.vue'
 import { Plus, Search, Filter, Avatar } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { findPage, deleteById } from '@/api/systemManagement/sysUser'
+import * as sysUser from '@/api/systemManagement/sysUser'
 import { userStatusFilter, sexFilter } from '@/dataMap/index'
 // 组件显隐
-let saveShow = ref(false)
-let detailShow = ref(false)
-let userRoleShow = ref(false)
-let drawerShow = ref(false)
-// 父子组件传值
-let subObject = reactive({
-	title: ref('title'),
-	params: ref({})
+const show = reactive({
+  drawerShow: false,
+  saveShow: false,
+  detailShow: false,
+  userRoleShow: false
 })
-// 过滤数据
+const { drawerShow, saveShow, detailShow, userRoleShow } = toRefs(show)
+// 父子组件传值
+const subObject = reactive({
+	title: 'title',
+	params: {}
+})
+// 查询条件
 const formData = reactive({
   keyword: '',
   userStatus: ''
 })
-
+// 表格数据
 const state = reactive({
   total: 0,
   pageNum: 1,
@@ -164,7 +167,7 @@ const state = reactive({
     }, {
       name: '删除',
       type: 'danger',
-      func: del
+      func: deleteById
     }]
   }]
 })
@@ -182,25 +185,25 @@ const {
 // 初始化数据
 onMounted(() => {
   console.log(`the component is now mounted.`)
-  findPageList()
+  handleCurrentChange()
 })
 
 // 按钮点击事件
 function add() {
   console.log('add----------')
-  saveShow.value = true
+  show.saveShow = true
   subObject.title = '新增'
   subObject.params = {}
 }
 function edit(val) {
   console.log('edit----------', val)
-  saveShow.value = true
+  show.saveShow = true
   subObject.title = '编辑'
   subObject.params = val
 }
 function detail(val) {
   console.log('detail----------', val)
-  detailShow.value = true
+  show.detailShow = true
   subObject.title = '查看'
   subObject.params = val
 }
@@ -214,17 +217,17 @@ function userRole() {
     })
     return
   }
-  userRoleShow.value = true
+  show.userRoleShow = true
   subObject.title = '授权角色'
   subObject.params = state.currentRow
 }
-function del(val) {
+function deleteById(val) {
   ElMessageBox.confirm('是否删除?', '提示', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning',
   }).then(() => {
-    deleteById({
+    sysUser.deleteById({
       modelId: val.id
     }).then(res => {
       ElMessage({
@@ -243,26 +246,26 @@ function handleSizeChange(val) {
   if (val) {
     state.pageSize = val
   }
-  findPageList()
+  findPage()
 }
 function handleCurrentChange(val) {
   if (val) {
     state.pageNum = val
   }
-  findPageList()
+  findPage()
 }
-function findPageList() {
+function findPage() {
   let params = Object.assign(formData, {
     pageNum: pageNum,
     pageSize: pageSize,
   })
   state.loading = true
-  findPage(params).then(res => {
+  sysUser.findPage(params).then(res => {
     state.tableData = res.data.data
     state.total = res.data.total
   }).finally(() => {
     state.loading = false
-    drawerShow.value = false
+    show.drawerShow = false
   })
 }
 function getCurrentRow(val) {

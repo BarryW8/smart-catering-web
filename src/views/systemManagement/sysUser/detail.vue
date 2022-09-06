@@ -19,9 +19,9 @@
           <el-descriptions-item label="真实姓名">{{ formData.realName }}</el-descriptions-item>
           <el-descriptions-item label="电子邮箱">{{ formData.email }}</el-descriptions-item>
           <el-descriptions-item label="用户状态">
-            <el-tag>{{ filter(formData, 'userStatus') }}</el-tag>
+            <el-tag>{{ filter(formData, 'userStatus').label || '' }}</el-tag>
           </el-descriptions-item>
-          <el-descriptions-item label="性别">{{ filter(formData, 'sex') }}</el-descriptions-item>
+          <el-descriptions-item label="性别">{{ filter(formData, 'sex').label || '' }}</el-descriptions-item>
           <el-descriptions-item label="备注" :span="2">{{ formData.note }}</el-descriptions-item>
         </el-descriptions>
 
@@ -37,58 +37,57 @@
   <script setup>
   // 拖拽弹窗
   import { ElMessage } from 'element-plus'
-  import { findById } from '@/api/systemManagement/sysUser'
+  import * as sysUser from '@/api/systemManagement/sysUser'
+  import { userStatusFilter, sexFilter } from '@/dataMap/index'
   // 父组件传值
   const props = defineProps(['show', 'subObject'])
   // 子组件回调
   const emits = defineEmits()
-  
+  // 过滤列表
+  const dataMap = {
+    userStatusFilter, sexFilter
+  }
+
   const loading = ref(false)
-  const formData = ref({
-    userName: '',
-    telephone: '',
-    realName: '',
-    email: '',
-    userStatus: 0,
-    sex: 0,
-    note: ''
+  const state = reactive({
+    formData: {
+      userName: '',
+      telephone: '',
+      realName: '',
+      email: '',
+      userStatus: 0,
+      sex: 0,
+      note: ''
+    }
   })
+  const { formData } = toRefs(state)
+
   const filter = computed(() => {
     return (val, field) => {
       if (!val || !field) {
         return ''
       }
-      if (field === 'userStatus') {
-        switch(val[field]) {
-          case 1:
-            return '禁用'
-          default:
-            return '启用'
-        }
+      let filterArr = dataMap[`${field}Filter`]
+      if (filterArr) {
+        let obj = filterArr.find(i => i.value === val[field])
+        return obj
       }
-      if (field === 'sex') {
-        switch(val[field]) {
-          case 1:
-            return '女'
-          default:
-            return '男'
-        }
-      }
+      return ''
     }
   })
   
   // 初始化数据
   onMounted(() => {
-    getInfo()
+    findById()
   })
   
   // 详情
-  const getInfo = () => {
+  const findById = () => {
     loading.value = true
-    findById({
+    sysUser.findById({
       modelId: props.subObject.params.id
     }).then(res => {
-      formData.value = res.data
+      state.formData = res.data
     }).finally(() => {
       loading.value = false
     })

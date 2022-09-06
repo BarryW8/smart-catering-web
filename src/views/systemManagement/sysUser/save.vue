@@ -70,7 +70,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button @click="hide" size="large">取消</el-button>
-          <el-button type="primary" @click="handleSave" size="large">保存</el-button>   
+          <el-button type="primary" @click="save" size="large">保存</el-button>   
         </div>
       </template>
     </el-dialog>
@@ -78,7 +78,8 @@
 </template>
 <script setup>
 import { ElMessage } from 'element-plus'
-import { save, findById } from '@/api/systemManagement/sysUser'
+import * as sysUser from '@/api/systemManagement/sysUser'
+import { reactive } from 'vue-demi'
 // 父组件传值
 const props = defineProps(['show', 'subObject'])
 // 子组件回调
@@ -86,15 +87,18 @@ const emits = defineEmits()
 
 const loading = ref(false)
 const formDataRef = ref(null)
-const formData = ref({
-  userName: '',
-  telephone: '',
-  realName: '',
-  email: '',
-  userStatus: 0,
-  sex: 0,
-  note: ''
+const state = reactive({
+  formData: {
+    userName: '',
+    telephone: '',
+    realName: '',
+    email: '',
+    userStatus: 0,
+    sex: 0,
+    note: ''
+  }
 })
+const { formData } = toRefs(state)
 const rules = reactive({
   userName: [{ required: true, message: '用户名不能为空', trigger: 'blur' }],
   telephone: [{ required: true, message: '手机号不能为空', trigger: 'blur' }],
@@ -104,29 +108,27 @@ const rules = reactive({
 // 初始化数据
 onMounted(() => {
   if (Object.keys(props.subObject.params).length > 0) {
-    getInfo()
+    findById()
   }
 })
 
 // 详情
-const getInfo = () => {
+const findById = () => {
   loading.value = true
-  findById({
+  sysUser.findById({
     modelId: props.subObject.params.id
   }).then(res => {
-    formData.value = res.data
+    state.formData = res.data
   }).finally(() => {
     loading.value = false
   })
 }
 // 保存
-const handleSave = () => {
+const save = () => {
   formDataRef.value.validate(valid => {
     if (valid) {
-      let params = formData.value
-      console.log(params)
-      save(params).then(res => {
-        console.log('handleSave-------', res)
+      let params = state.formData
+      sysUser.save(params).then(res => {
         ElMessage({
           type: 'success',
           message: '保存成功',
