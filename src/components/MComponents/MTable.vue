@@ -87,8 +87,8 @@ const props = defineProps({
   },
   // 表高度
   height: {
-    type: String,
-    default: '640'
+    type: Number,
+    default: 640
   },
 })
 // 子组件回调

@@ -46,24 +46,27 @@
       </template>
     </el-drawer>
 
-    <!-- 表组件 -->
-    <MTable
-      :tableFilter="tableFilter"
-      :tableData="tableData"
-      :tableColumn="tableColumn"
-      :loading="loading"
-      :pageNum="pageNum"
-      :pageSize="pageSize"
-      @getCurrentRow="getCurrentRow"
-    />
-    <!-- 分页组件 -->
-    <MPagination
-      :total="total"
-      :pageNum="pageNum"
-      :pageSize="pageSize"
-      @handleCurrentChange="handleCurrentChange"
-      @handleSizeChange="handleSizeChange"
-    />
+    <Table v-slot="{ tableHeight }">
+      <!-- 表组件 -->
+      <MTable
+        :tableFilter="tableFilter"
+        :tableData="tableData"
+        :tableColumn="tableColumn"
+        :height="tableHeight"
+        :loading="loading"
+        :pageNum="pageNum"
+        :pageSize="pageSize"
+        @getCurrentRow="getCurrentRow"
+      />
+      <!-- 分页组件 -->
+      <MPagination
+        :total="total"
+        :pageNum="pageNum"
+        :pageSize="pageSize"
+        @handleCurrentChange="handleCurrentChange"
+        @handleSizeChange="handleSizeChange"
+      />
+    </Table>
 
     <Save
       v-if="saveShow"
@@ -256,6 +259,7 @@ function getCurrentRow(val) {
 function reset() {
   formData.keyword = ''
   formData.status = ''
+  handleCurrentChange(1)
 }
 </script>
 

@@ -1,6 +1,6 @@
 <template>
     <div class="container">
-      <div class="button-wrap">
+      <div ref="screen" class="button-wrap">
         <div>
           <el-button type="success" :icon="Plus" @click="add">新增</el-button>
         </div>
@@ -45,16 +45,20 @@
         </template>
       </el-drawer>
   
-      <!-- 表组件 -->
-      <MTableTree
-        ref="mTableTreeRef"
-        :isSingle="true"
-        :tableFilter="tableFilter"
-        :tableData="tableData"
-        :tableColumn="tableColumn"
-        :tabField="tabField"
-        :loading="loading"
-      />
+      <Table v-slot="{ tableHeight }">
+        <!-- 表组件 -->
+        <MTableTree
+          ref="mTableTreeRef"
+          :isSingle="true"
+          :tableFilter="tableFilter"
+          :tableData="tableData"
+          :tableColumn="tableColumn"
+          :height="tableHeight"
+          :tabField="tabField"
+          :loading="loading"
+        />
+        <div ref="pagination" style="height: 60px" />
+      </Table>
   
       <Save
         v-if="saveShow"
@@ -68,7 +72,7 @@
   
   <script setup>
   import Save from '@/views/systemManagement/dictionary/save.vue'
-  import { Plus, Search, Filter, Avatar } from '@element-plus/icons-vue'
+  import { Plus, Search, Filter } from '@element-plus/icons-vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
   import * as dictionary from '@/api/systemManagement/dictionary'
   import { statusFilter } from '@/dataMap/index'
@@ -203,6 +207,7 @@
   function reset() {
     formData.keyword = ''
     formData.status = ''
+    getList()
   }
   </script>
   

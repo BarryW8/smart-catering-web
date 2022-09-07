@@ -1,6 +1,6 @@
 <template>
   <div class="container">
-    <div class="button-wrap">
+    <div ref="screen" class="button-wrap">
       <div>
         <el-button type="success" :icon="Plus" @click="add">新增</el-button>
         <el-button type="primary" :icon="Avatar" @click="userRole">授权角色</el-button>
@@ -46,11 +46,13 @@
       </template>
     </el-drawer>
 
+  <Table v-slot="{ tableHeight }">
     <!-- 表组件 -->
     <MTable
       :tableFilter="tableFilter"
       :tableData="tableData"
       :tableColumn="tableColumn"
+      :height="tableHeight"
       :loading="loading"
       :pageNum="pageNum"
       :pageSize="pageSize"
@@ -58,12 +60,14 @@
     />
     <!-- 分页组件 -->
     <MPagination
+      ref="pagination"
       :total="total"
       :pageNum="pageNum"
       :pageSize="pageSize"
       @handleCurrentChange="handleCurrentChange"
       @handleSizeChange="handleSizeChange"
     />
+  </Table>
 
     <Save
       v-if="saveShow"
@@ -117,7 +121,7 @@ const formData = reactive({
 const state = reactive({
   total: 0,
   pageNum: 1,
-  pageSize: 15,
+  pageSize: 30,
   currentRow: null,
   loading: false,
   tableFilter: {
@@ -274,6 +278,7 @@ function getCurrentRow(val) {
 function reset() {
   formData.keyword = ''
   formData.userStatus = ''
+  handleCurrentChange(1)
 }
 </script>
 
