@@ -69,6 +69,13 @@ export const asyncRoutes = [
         },
       },
       {
+        path: "sysMenu",
+        component: () => import("@/views/systemManagement/sysMenu/index.vue"),
+        meta: {
+          title: "菜单管理",
+        },
+      },
+      {
         path: "dictionary",
         component: () => import("@/views/systemManagement/dictionary/index.vue"),
         meta: {

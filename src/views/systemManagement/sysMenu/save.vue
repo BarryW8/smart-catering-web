@@ -17,19 +17,51 @@
       >
         <el-row :gutter="40">
           <el-col :span="12">
-            <el-form-item label="字典名:" prop="name">
-              <el-input v-model="formData.name" maxlength="30" placeholder="请输入字典名" />
+            <el-form-item label="菜单标题:" prop="label">
+              <el-input v-model="formData.label" maxlength="30" placeholder="请输入菜单标题" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
-            <el-form-item label="字典编号:" prop="code">
-              <el-input v-model="formData.code" maxlength="30" placeholder="请输入字典编号" />
+            <el-form-item label="图标:" prop="iconPath">
+              <el-input v-model="formData.iconPath" maxlength="30" placeholder="请输入图标" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="40">
+          <el-col :span="24">
+            <el-form-item label="路由路径:" prop="routePath">
+              <el-input v-model="formData.routePath" maxlength="120" placeholder="请输入路由路径" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="40">
+          <el-col :span="24">
+            <el-form-item label="文件路径:" prop="pagePath">
+              <el-input v-model="formData.pagePath" maxlength="120" placeholder="请输入文件路径" />
             </el-form-item>
           </el-col>
         </el-row>
         <el-row :gutter="40">
           <el-col :span="12">
-            <el-form-item label="父字典:" prop="parentId">
+            <el-form-item label="是否隐藏:" prop="isHide">
+              <el-select v-model="formData.isHide" style="width:100%" placeholder="请选择状态">
+                <el-option label="否" :value="0" />
+                <el-option label="是" :value="1" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="跳转类型:" prop="linkType">
+              <el-select v-model="formData.linkType" style="width:100%" placeholder="请选择跳转类型">
+                <el-option label="内链" :value="0" />
+                <el-option label="外链" :value="1" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="40">
+          <el-col :span="12">
+            <el-form-item label="父菜单:" prop="parentId">
               <el-tree-select
                 v-model="formData.parentId"
                 :data="parentList"
@@ -39,25 +71,9 @@
                 clearable
                 filterable
                 value-key="id"
-                :props="{ label: 'name' }"
+                :props="{ label: 'label' }"
                 style="width:100%"
-                @current-change="handleTreeChange"
               />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="状态:" prop="status">
-              <el-select v-model="formData.status" style="width:100%" placeholder="请选择状态">
-                <el-option label="启用" :value="0" />
-                <el-option label="禁用" :value="1" />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <el-row :gutter="40">
-          <el-col :span="12">
-            <el-form-item label="备注:" prop="note">
-              <el-input v-model="formData.note" maxlength="100" placeholder="请输入备注" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -75,8 +91,8 @@
         </el-row>
         <el-row :gutter="40">
           <el-col :span="24">
-            <el-form-item label="相关配置:" prop="configValue">
-              <el-input v-model="formData.configValue" type="textarea" :rows="2" maxlength="100" placeholder="请输入相关配置" />
+            <el-form-item label="备注:" prop="configValue">
+              <el-input v-model="formData.configValue" type="textarea" :rows="2" maxlength="100" placeholder="请输入备注" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -94,7 +110,7 @@
 </template>
 <script setup>
 import { ElMessage } from 'element-plus'
-import * as dictionary from '@/api/systemManagement/dictionary'
+import * as sysMenu from '@/api/systemManagement/sysMenu'
 // 父组件传值
 const props = defineProps(['show', 'subObject'])
 // 子组件回调
@@ -105,32 +121,21 @@ const formDataRef = ref(null)
 const state = reactive({
   parentList: [],
   formData: {
-    name: '',
-    code: '',
-    status: 0,
+    label: '',
+    isHide: 0,
+    linkType: 0,
     note: '',
     orderBy: 1,
-    configValue: '',
-    parentId: '',
-    parentCode: ''
+    parentId: ''
   }
 })
 const { formData, parentList } = toRefs(state)
 const rules = reactive({
-  name: [{ required: true, message: '字典名不能为空', trigger: 'blur' }],
-  code: [{ required: true, message: '字典编号不能为空', trigger: 'blur' }],
+  label: [{ required: true, message: '菜单标题不能为空', trigger: 'blur' }],
+  isHide: [{ required: true, message: '是否隐藏不能为空', trigger: 'change' }],
+  linkType: [{ required: true, message: '跳转类型不能为空', trigger: 'change' }],
   orderBy: [{ required: true, message: '排序不能为空', trigger: 'blur' }]
 })
-
-
-watch(
-  () => state.formData.parentId,
-  (val) => {
-    if (!val) {
-      state.formData.parentCode = ''
-    }
-  }
-)
 
 // 初始化数据
 onMounted(() => {
@@ -138,7 +143,6 @@ onMounted(() => {
   if (Object.keys(props.subObject.params).length > 0) {
     if (props.subObject.title === '新增') {
       state.formData.parentId = props.subObject.params.id
-      state.formData.parentCode = props.subObject.params.code
     } else {
       findById()
     }
@@ -148,7 +152,7 @@ onMounted(() => {
 // 详情
 const findById = () => {
   loading.value = true
-  dictionary.findById({
+  sysMenu.findById({
     modelId: props.subObject.params.id
   }).then(res => {
     if (res.data && res.data.parentId === '-1') {
@@ -164,7 +168,7 @@ const save = () => {
   formDataRef.value.validate(valid => {
     if (valid) {
       let params = state.formData
-      dictionary.save(params).then(res => {
+      sysMenu.save(params).then(res => {
         ElMessage({
           type: 'success',
           message: '保存成功',
@@ -181,13 +185,10 @@ const save = () => {
 // 表数据查询
 function getList() {
   let params = {}
-  dictionary.getList(params).then(res => {
+  sysMenu.getList(params).then(res => {
     state.parentList = res.data
   }).finally(() => {
   })
-}
-function handleTreeChange(val, node) {
-  state.formData.parentCode = val.code
 }
 // 关闭窗口
 const hide = () => {

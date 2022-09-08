@@ -29,10 +29,18 @@
           label-width="100px"
         >
           <el-col :span="24">
-            <el-form-item label="状态">
-              <el-select v-model="formData.status" clearable style="width:100%" placeholder="请选择状态">
-                <el-option label="启用" :value="0" />
-                <el-option label="禁用" :value="1" />
+            <el-form-item label="是否隐藏">
+              <el-select v-model="formData.isHide" clearable style="width:100%" placeholder="请选择状态">
+                <el-option label="否" :value="0" />
+                <el-option label="是" :value="1" />
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="24">
+            <el-form-item label="跳转类型">
+              <el-select v-model="formData.linkType" clearable style="width:100%" placeholder="请选择跳转类型">
+                <el-option label="内链" :value="0" />
+                <el-option label="外链" :value="1" />
               </el-select>
             </el-form-item>
           </el-col>
@@ -70,11 +78,11 @@
   </template>
   
   <script setup>
-  import Save from '@/views/systemManagement/dictionary/save.vue'
+  import Save from '@/views/systemManagement/sysMenu/save.vue'
   import { Plus, Search, Filter } from '@element-plus/icons-vue'
   import { ElMessage, ElMessageBox } from 'element-plus'
-  import * as dictionary from '@/api/systemManagement/dictionary'
-  import { statusFilter } from '@/dataMap/index'
+  import * as sysMenu from '@/api/systemManagement/sysMenu'
+  import { linkTypeFilter, isHideFilter } from '@/dataMap/index'
   // 组件显隐
   const show = reactive({
     drawerShow: false,
@@ -89,7 +97,8 @@
   // 查询条件
   const formData = reactive({
     keyword: '',
-    status: ''
+    isHide: '',
+    linkType: ''
   })
   const mTableTreeRef = ref(null)
   // 表格数据
@@ -97,26 +106,36 @@
     currentRow: null,
     loading: false,
     tableFilter: {
-      statusFilter: statusFilter
+      linkTypeFilter: linkTypeFilter,
+      isHideFilter: isHideFilter,
     },
     tableData: [],
     tableColumn: [{
-      prop: 'name',
+      prop: 'label',
       align: 'center',
-      label: '字典名称'
+      label: '菜单标题'
     }, {
-      prop: 'code',
+      prop: 'routePath',
       align: 'center',
-      label: '字典编号'
+      label: '菜单路径'
     }, {
-      prop: 'parentCode',
+      prop: 'pagePath',
       align: 'center',
-      label: '父编号'
+      label: '文件路径'
     }, {
-      prop: 'status',
+      prop: 'iconPath',
       align: 'center',
-      label: '状态',
-      tag: true
+      label: '图标'
+    }, {
+      prop: 'isHide',
+      align: 'center',
+      label: '是否隐藏',
+      filter: true
+    }, {
+      prop: 'linkType',
+      align: 'center',
+      label: '跳转类型',
+      filter: true
     }, {
       prop: 'note',
       align: 'center',
@@ -194,7 +213,7 @@
     let params = Object.assign({}, formData)
     console.log('params------', params)
     state.loading = true
-    dictionary.getList(params).then(res => {
+    sysMenu.getList(params).then(res => {
       state.tableData = res.data
     }).finally(() => {
       state.loading = false
@@ -203,7 +222,8 @@
   }
   function reset() {
     formData.keyword = ''
-    formData.status = ''
+    formData.isHide = ''
+    formData.linkType = ''
     getList()
   }
   </script>
