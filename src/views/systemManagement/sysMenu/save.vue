@@ -96,6 +96,19 @@
             </el-form-item>
           </el-col>
         </el-row>
+        <el-row>
+          <el-form-item label="按钮权限:" prop="permsList">
+            <el-checkbox-group v-model="permsList">
+              <el-checkbox
+                v-for="(item, index) in buttonOption"
+                :key="index"
+                :label="item.code"
+              >
+                {{ item.name }}
+              </el-checkbox>
+            </el-checkbox-group>
+          </el-form-item>
+        </el-row>
       </el-form>
 
       <!-- 弹窗按钮 -->
@@ -111,6 +124,7 @@
 <script setup>
 import { ElMessage } from 'element-plus'
 import * as sysMenu from '@/api/systemManagement/sysMenu'
+import * as dictionary from '@/api/systemManagement/dictionary'
 // 父组件传值
 const props = defineProps(['show', 'subObject'])
 // 子组件回调
@@ -119,6 +133,8 @@ const emits = defineEmits()
 const loading = ref(false)
 const formDataRef = ref(null)
 const state = reactive({
+  buttonOption: [],
+  permsList: [], // 按钮权限集合
   parentList: [],
   formData: {
     label: '',
@@ -129,7 +145,7 @@ const state = reactive({
     parentId: ''
   }
 })
-const { formData, parentList } = toRefs(state)
+const { formData, buttonOption, permsList, parentList } = toRefs(state)
 const rules = reactive({
   label: [{ required: true, message: '菜单标题不能为空', trigger: 'blur' }],
   isHide: [{ required: true, message: '是否隐藏不能为空', trigger: 'change' }],
@@ -140,6 +156,7 @@ const rules = reactive({
 // 初始化数据
 onMounted(() => {
   getList()
+  option4Dictionary()
   if (Object.keys(props.subObject.params).length > 0) {
     if (props.subObject.title === '新增') {
       state.formData.parentId = props.subObject.params.id
@@ -158,6 +175,9 @@ const findById = () => {
     if (res.data && res.data.parentId === '-1') {
       res.data.parentId = ''
     }
+    if (res.data.perms) {
+      state.permsList = res.data.perms.split(',')
+    }
     state.formData = res.data
   }).finally(() => {
     loading.value = false
@@ -168,6 +188,9 @@ const save = () => {
   formDataRef.value.validate(valid => {
     if (valid) {
       let params = state.formData
+      if (state.permsList) {
+        params.perms = state.permsList.join(',')
+      }
       sysMenu.save(params).then(res => {
         ElMessage({
           type: 'success',
@@ -187,6 +210,16 @@ function getList() {
   let params = {}
   sysMenu.getList(params).then(res => {
     state.parentList = res.data
+  }).finally(() => {
+  })
+}
+// 表数据查询
+function option4Dictionary() {
+  let params = {
+    parentCode: '001'
+  }
+  dictionary.optionList(params).then(res => {
+    state.buttonOption = res.data
   }).finally(() => {
   })
 }
