@@ -17,30 +17,34 @@ const powerType = import.meta.env.VITE_POWER_TYPE; // 权限类型
 
 // 静态路由
 
-const constantRouters = [
+export const constantRoutes = [
   {
-    path: "/",
-    name: "index",
-    redirect: "/dashboard/index",
-  },
-  {
-    path: "/dashboard",
-    name: "Dashboard",
+    path: '/redirect',
     component: Layout,
-    redirect: "/dashboard/index",
+    hidden: true,
     children: [
       {
-        name: "Index",
-        path: "index",
-        component: () => import("@/views/dashboard/index.vue"),
-      },
-    ],
+        path: '/redirect/:path(.*)',
+        component: () => import('@/views/redirect/index.vue')
+      }
+    ]
   },
   {
     path: "/login",
     name: "login",
     component: () => import("@/views/login/index.vue"),
   },
+  {
+    path: '/',
+    component: Layout,
+    redirect: '/dashboard',
+    children: [{
+      path: 'dashboard',
+      name: 'dashboard',
+      component: () => import('@/views/dashboard/index.vue'),
+      meta: { title: '首页', icon: 'dashboard', affix: true }
+    }]
+  }
 ];
 
 // 动态路由
@@ -239,14 +243,14 @@ export const asyncRoutes = [
   },
 ];
 
-const allRouter =
-  powerType == "1"
-    ? constantRouters.concat(asyncRoutes)
-    : constantRouters;
+// const allRouter =
+//   powerType == "1"
+//     ? constantRouters.concat(asyncRoutes)
+//     : constantRouters;
 
 export const router = createRouter({
   history: createWebHashHistory(),
-  routes: allRouter,
+  routes: constantRoutes,
 });
 
 export default router

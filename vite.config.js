@@ -7,6 +7,7 @@ import { svgBuilder } from "./src/plugin/icons/svgBuilder";
 import AutoImport from "unplugin-auto-import/vite" // 自动导入插件
 import Components from "unplugin-vue-components/vite" // 自动导入组件
 import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
+import { viteCommonjs } from '@originjs/vite-plugin-commonjs' // 让浏览器支持commonjs语法，否则 @/settings.js 会报错
 import path from 'path'
 
 const srcPath = path.resolve(__dirname, 'src')
@@ -23,6 +24,7 @@ export default defineConfig({
   },
   plugins: [
     vue(),
+    viteCommonjs(),
     svgBuilder("./src/plugin/icons/svg/"),
     AutoImport ({
       imports: [

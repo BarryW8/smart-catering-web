@@ -1,4 +1,4 @@
-import { login, logout } from "@/api/systemManagement/sysUser";
+import { login, logout, userInfo } from "@/api/systemManagement/sysUser";
 import { getUserInfo } from "@/api/epgms/account/getUserInfo";
 import filterAsyncRoutes from "@/core/addRoutePermission";
 import {
@@ -9,6 +9,7 @@ import {
 
 const state = {
   token: getToken(),
+  userInfo: null,
   sidebar: true,
   routes: [],
 };
@@ -23,6 +24,10 @@ const mutations = {
   SET_ROUTES: (state, routes) => {
     state.routes = routes;
   },
+  SET_USER_INFO: (state, userInfo) => {
+    console.log('SET_USER_INFO', userInfo)
+    state.userInfo = userInfo
+  }
 };
 
 const actions = {
@@ -30,7 +35,7 @@ const actions = {
   async Login({ commit }, userInfo) {
     console.log(userInfo)
     const { username, password } = userInfo;
-    var res = await login({
+    const res = await login({
       username: username.trim(),
       password: password.trim(),
     });
@@ -58,11 +63,18 @@ const actions = {
   // },
 
   // 获取用户信息
-  async GetUserInfo(context, token) {
-    const result = await getUserInfo(token);
-    const { data } = result;
-    const { roles } = data;
-    return roles;
+  async UserInfo({ commit }) {
+    const res = await userInfo();
+    const { code, data } = res;
+    if (code === 0) {
+      // 存用户信息
+      commit('SET_USER_INFO', data)
+      // 还需把接口返回的路由信息commit到动态路由
+      if (data && data.menuList) {
+        commit('permission/SET_ROUTES', data.menuList, { root: true })
+      }
+    }
+    return res;
   },
 
   // 退出登录
@@ -85,7 +97,7 @@ const actions = {
 };
 
 export default {
-  namespace: true,
+  namespaced: true,
   state,
   mutations,
   actions,

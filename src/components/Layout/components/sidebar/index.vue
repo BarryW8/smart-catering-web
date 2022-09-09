@@ -44,8 +44,9 @@ export default defineComponent({
     });
 
     const routes = computed(() => {
-      const powerType = import.meta.env.VITE_POWER_TYPE;
-      return powerType === "1" ? asyncRoutes : store.getters.routes;
+      console.log('routes----------', store)
+      console.log('routes----------', store.getters.routes)
+      return store.getters.routes;
     });
     const { path } = useRoute();
 

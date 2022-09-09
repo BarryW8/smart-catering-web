@@ -78,9 +78,9 @@ export function logout(data) {
 }
 
 // 登录后，获取系统用户信息
-export function getUserInfo() {
+export function userInfo() {
   return request({
-    url: api + '/getUserInfo',
+    url: api + '/userInfo',
     method: 'get',
     isParams: true
   })

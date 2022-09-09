@@ -6,7 +6,7 @@ import directive from "./directive/index"; // directive
 // import "element-plus/lib/theme-chalk/index.css"; // element css
 import 'element-plus/dist/index.css'
 // import useElementUi from "./elementui"; // 按需引入element-ui
-import "./core/permission"; // 动态校验路由
+import "./permission"; // 动态校验路由
 import "./stylus/index.styl"; // css文件
 import svgIcon from "./plugin/icons/svgIcon.vue"; // svg文件
 

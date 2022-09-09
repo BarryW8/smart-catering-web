@@ -21,7 +21,7 @@ onMounted(() => {
 })
 
 // 使用 action
-const Login = (params) => store.dispatch('Login', params)
+const Login = (params) => store.dispatch('user/Login', params)
 
 function findPageList() {
   let params = {

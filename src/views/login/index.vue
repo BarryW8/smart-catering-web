@@ -51,7 +51,7 @@ const rules = reactive({
 })
 const store = useStore()
 // 使用 action
-const Login = (params) => store.dispatch('Login', params)
+const Login = (params) => store.dispatch('user/Login', params)
 
 function handleLogin() {
   loginFormRef.value.validate(valid => {
