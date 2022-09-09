@@ -39,3 +39,13 @@ export function deleteById(data) {
     isParams: true
   })
 }
+
+// 下拉列表
+export function optionList(data) {
+  return request({
+    url: api + '/optionList',
+    method: 'get',
+    data,
+    isParams: true
+  })
+}

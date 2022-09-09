@@ -2,6 +2,16 @@ import request from '@/utils/request'
 
 const api = 'user-server/sysMenu'
 
+// 详情
+export function findMenuList(data) {
+  return request({
+    url: api + '/findMenuList',
+    method: 'get',
+    data,
+    isParams: true
+  })
+}
+
 // 新增/编辑
 export function save(data) {
   return request({
