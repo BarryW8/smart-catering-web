@@ -44,8 +44,6 @@ export default defineComponent({
     });
 
     const routes = computed(() => {
-      console.log('routes----------', store)
-      console.log('routes----------', store.getters.routes)
       return store.getters.routes;
     });
     const { path } = useRoute();

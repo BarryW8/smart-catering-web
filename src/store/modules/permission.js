@@ -2,6 +2,8 @@ import { asyncRoutes } from '@/router'
 import setting from '@/settings'
 import Layout from '@/components/Layout/index.vue'
 
+const modules = import.meta.glob('@/views/**/*.vue')
+
 // 遍历后台返回的菜单，生成动态路由(仅用于菜单展示)
 const filterAsyncRoutes = (routes) => {
   const res = []
@@ -30,8 +32,15 @@ const filterAsyncRoutes = (routes) => {
         } else if (item.pagePath === 'Layout2') {
           route.component = { render(c) { return c('router-view') } }
         } else {
+          // console.log('modules--------------', modules)
+          for (const path in modules) {
+            modules[path]().then((mod) => {
+              console.log('modules--------------', path, mod)
+            })
+          }
           // 先屏蔽掉，不要导致没有用到的文件报语法错误(正式调用接口时启用)
-          route.component = import.meta.glob('@/views/'+item.pagePath)
+          console.log('pagePath--------------', `../../views/${item.pagePath}`)
+          route.component = modules[`../../views/${item.pagePath}`];
 
           // 收集页面按钮权限
           if (item.perms) { route.meta.menu = item.perms.split(',') }
@@ -112,7 +121,7 @@ const formatRouter = (routes, list = []) => {
         if (item.pagePath === 'Layout2') {
           route.component = Layout
         } else {
-          route.component = import.meta.glob('@/views/'+item.pagePath)
+          route.component = modules[`../../views/${item.pagePath}`];
           // 收集页面按钮权限
           if (item.perms) { route.meta.menu = item.perms.split(',') }
         }

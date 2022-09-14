@@ -69,6 +69,7 @@ const actions = {
     if (code === 0) {
       // 存用户信息
       commit('SET_USER_INFO', data)
+      console.log('SET_USER_INFO------------', data)
       // 还需把接口返回的路由信息commit到动态路由
       if (data && data.menuList) {
         commit('permission/SET_ROUTES', data.menuList, { root: true })
