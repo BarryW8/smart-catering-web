@@ -69,11 +69,10 @@ export function login(data) {
 }
 
 // 系统用户退出登录
-export function logout(data) {
+export function logout() {
   return request({
     url: api + '/logout',
-    method: 'post',
-    data
+    method: 'get'
   })
 }
 
@@ -81,7 +80,6 @@ export function logout(data) {
 export function userInfo() {
   return request({
     url: api + '/userInfo',
-    method: 'get',
-    isParams: true
+    method: 'get'
   })
 }

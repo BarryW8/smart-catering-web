@@ -11,36 +11,28 @@
           <el-dropdown-item command="personInfo" divided
             >个人信息</el-dropdown-item
           >
-          <el-dropdown-item command="logout" divided>退出登录</el-dropdown-item>
+          <el-dropdown-item divided @click.native="logout">退出登录</el-dropdown-item>
         </el-dropdown-menu>
       </template>
     </el-dropdown>
   </div>
 </template>
 
-<script>
+<script setup>
 import { useStore } from "vuex";
 import { useRouter } from "vue-router";
-export default {
-  setup() {
-    const store = useStore();
-    const router = useRouter();
-    const userName = store.getters.userName;
-    const handleCommand = (command) => {
-      if (command === "personInfo") {
-      } else {
-        // logout
-        store.dispatch("Logout").then(() => {
-          router.push("/login");
-        });
-      }
-    };
-    return {
-      userName,
-      handleCommand,
-    };
-  },
+const store = useStore();
+const router = useRouter();
+const userName = store.getters.userName;
+const handleCommand = (command) => {
+  if (command === "personInfo") {
+  }
 };
+
+async function logout() {
+  await store.dispatch('user/Logout')
+  router.push(`/login?redirect=${router.fullPath}`)
+}
 </script>
 
 <style lang="stylus" scoped>

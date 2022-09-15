@@ -7,14 +7,21 @@ import {
   removeToken,
 } from "@/utils/auth";
 
-const state = {
-  token: getToken(),
-  userInfo: null,
-  sidebar: true,
-  routes: [],
-};
+const getDefaultState = () => {
+  return {
+    token: getToken(),
+    userInfo: null,
+    sidebar: true,
+    routes: [],
+  }
+}
+
+const state = getDefaultState()
 
 const mutations = {
+  RESET_STATE: (state) => {
+    Object.assign(state, getDefaultState())
+  },
   SET_TOKEN: (state, token) => {
     state.token = token;
   },
@@ -80,9 +87,13 @@ const actions = {
 
   // 退出登录
   async Logout({ commit }) {
-    logout().then(() => {
+    const res = await logout();
+    const { code } = res;
+    if (code === 0) {
       removeToken() // must remove  token  first
-    });
+      commit('RESET_STATE')
+    }
+    return res;
   },
 
   // sidebar status
